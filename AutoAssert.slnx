@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AutoAssert/AutoAssert.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AutoAssert.Tests/AutoAssert.Tests.csproj" />
+  </Folder>
+</Solution>
