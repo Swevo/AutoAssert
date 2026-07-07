@@ -1,7 +1,7 @@
 # AutoAssert
 
-[![NuGet](https://img.shields.io/nuget/v/AutoAssert.svg)](https://www.nuget.org/packages/AutoAssert/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/AutoAssert.svg)](https://www.nuget.org/packages/AutoAssert/)
+[![NuGet](https://img.shields.io/nuget/v/Swevo.AutoAssert.svg)](https://www.nuget.org/packages/Swevo.AutoAssert/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Swevo.AutoAssert.svg)](https://www.nuget.org/packages/Swevo.AutoAssert/)
 [![CI](https://github.com/Swevo/AutoAssert/actions/workflows/build.yml/badge.svg)](https://github.com/Swevo/AutoAssert/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -26,7 +26,7 @@ action.Should().Throw<InvalidOperationException>().WithMessage("boom");
 ## Install
 
 ```bash
-dotnet add package AutoAssert
+dotnet add package Swevo.AutoAssert
 ```
 
 ## Supported assertions
