@@ -6,10 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
 
     <PackageId>Swevo.AutoAssert</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Authors>Justin Bannister</Authors>
     <Copyright>Copyright (c) 2026 Justin Bannister</Copyright>
-    <Description>Free, MIT-licensed fluent assertions for .NET test suites. Zero reflection, AOT-safe, no commercial license required. A drop-in-friendly alternative to FluentAssertions covering objects, strings, numerics, booleans, collections, and exceptions.</Description>
+    <Description>Free, MIT-licensed fluent assertions for .NET test suites. AOT-safe and zero reflection at runtime where possible, with a drop-in-friendly alternative to FluentAssertions covering objects, strings, numerics, booleans, collections, exceptions, and deep structural equivalence.</Description>
     <PackageTags>testing;assertions;fluent-assertions;unit-testing;xunit;nunit;mstest;dotnet;csharp;aot-safe;free;mit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -23,7 +23,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-    <PackageReleaseNotes>1.0.1: Add missing package icon. 1.0.0: Initial release. Object, string, numeric, boolean, collection, and exception assertions.</PackageReleaseNotes>
+    <PackageReleaseNotes>1.1.0: Add BeEquivalentTo deep structural equivalence for objects, nested graphs, and collections with circular-reference protection. 1.0.1: Add missing package icon. 1.0.0: Initial release. Object, string, numeric, boolean, collection, and exception assertions.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.*" PrivateAssets="all">

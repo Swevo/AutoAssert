@@ -60,6 +60,90 @@ public class ObjectAssertionsTests
         Assert.Throws<AssertionFailedException>(() => ((object)10).Should().Match(x => (int)x! > 50));
 
     [Fact]
+    public void BeEquivalentTo_Passes_For_Equivalent_Object_Graphs()
+    {
+        var actual = new Person
+        {
+            Id = 1,
+            Name = "Ada",
+            Address = new Address { City = "London", PostCode = "SW1A" }
+        };
+
+        var expected = new PersonDto
+        {
+            Id = 1,
+            Name = "Ada",
+            Address = new AddressDto { City = "London", PostCode = "SW1A" }
+        };
+
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void BeEquivalentTo_Fails_With_Differing_Property_Path()
+    {
+        var actual = new Person { Id = 1, Name = "Ada", Address = new Address { City = "London", PostCode = "SW1A" } };
+        var expected = new Person { Id = 1, Name = "Grace", Address = new Address { City = "London", PostCode = "SW1A" } };
+
+        var ex = Assert.Throws<AssertionFailedException>(() => actual.Should().BeEquivalentTo(expected));
+
+        Assert.Equal("Expected member 'Name' to be \"Grace\", but found \"Ada\".", ex.Message);
+    }
+
+    [Fact]
+    public void BeEquivalentTo_Fails_With_Deep_Nested_Path()
+    {
+        var actual = new Company
+        {
+            Name = "AutoAssert",
+            Headquarters = new Address { City = "Paris", PostCode = "75001" }
+        };
+
+        var expected = new Company
+        {
+            Name = "AutoAssert",
+            Headquarters = new Address { City = "London", PostCode = "75001" }
+        };
+
+        var ex = Assert.Throws<AssertionFailedException>(() => actual.Should().BeEquivalentTo(expected));
+
+        Assert.Equal("Expected member 'Headquarters.City' to be \"London\", but found \"Paris\".", ex.Message);
+    }
+
+    [Fact]
+    public void BeEquivalentTo_Passes_When_Both_Null()
+    {
+        object? actual = null;
+        object? expected = null;
+
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void BeEquivalentTo_Fails_When_Only_One_Side_Is_Null()
+    {
+        object? actual = null;
+        var expected = new PersonDto { Id = 1, Name = "Ada", Address = new AddressDto { City = "London", PostCode = "SW1A" } };
+
+        var ex = Assert.Throws<AssertionFailedException>(() => actual.Should().BeEquivalentTo(expected));
+
+        Assert.Contains("Expected value to be", ex.Message);
+        Assert.Contains("but found <null>.", ex.Message);
+    }
+
+    [Fact]
+    public void BeEquivalentTo_Does_Not_Recurse_Infinitely_For_Circular_References()
+    {
+        var actual = new Node { Name = "root" };
+        actual.Next = actual;
+
+        var expected = new Node { Name = "root" };
+        expected.Next = expected;
+
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
     public void Because_Reason_Is_Appended_To_Failure_Message()
     {
         var ex = Assert.Throws<AssertionFailedException>(() => 1.Should().Be(2, "the answer must match"));
@@ -154,6 +238,42 @@ public class CollectionAssertionsTests
         Assert.Throws<AssertionFailedException>(() => new[] { 1, 2, 3 }.Should().BeEquivalentTo(new[] { 1, 2 }));
 
     [Fact]
+    public void BeEquivalentTo_Passes_For_Collections_Of_Objects_Regardless_Of_Order()
+    {
+        object[] actual =
+        [
+            new Person { Id = 1, Name = "Ada", Address = new Address { City = "London", PostCode = "SW1A" } },
+            new Person { Id = 2, Name = "Grace", Address = new Address { City = "Paris", PostCode = "75001" } }
+        ];
+
+        object[] expected =
+        [
+            new PersonDto { Id = 2, Name = "Grace", Address = new AddressDto { City = "Paris", PostCode = "75001" } },
+            new PersonDto { Id = 1, Name = "Ada", Address = new AddressDto { City = "London", PostCode = "SW1A" } }
+        ];
+
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void BeEquivalentTo_Fails_For_Collections_With_Deep_Object_Difference()
+    {
+        object[] actual =
+        [
+            new Person { Id = 1, Name = "Ada", Address = new Address { City = "London", PostCode = "SW1A" } }
+        ];
+
+        object[] expected =
+        [
+            new PersonDto { Id = 1, Name = "Ada", Address = new AddressDto { City = "Paris", PostCode = "SW1A" } }
+        ];
+
+        var ex = Assert.Throws<AssertionFailedException>(() => actual.Should().BeEquivalentTo(expected));
+
+        Assert.Equal("Expected member '[0].Address.City' to be \"Paris\", but found \"London\".", ex.Message);
+    }
+
+    [Fact]
     public void Equal_Passes_When_Same_Order() =>
         new[] { 1, 2, 3 }.Should().Equal(new[] { 1, 2, 3 });
 
@@ -214,4 +334,42 @@ public class ExceptionAssertionsTests
     [Fact]
     public async Task NotThrowAsync_Passes_When_No_Exception() =>
         await (((Func<Task>)(() => Task.CompletedTask)).Should().NotThrowAsync());
+}
+
+file sealed class Person
+{
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public Address Address { get; init; } = new();
+}
+
+file sealed class PersonDto
+{
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public AddressDto Address { get; init; } = new();
+}
+
+file sealed class Company
+{
+    public string Name { get; init; } = string.Empty;
+    public Address Headquarters { get; init; } = new();
+}
+
+file sealed class Address
+{
+    public string City { get; init; } = string.Empty;
+    public string PostCode { get; init; } = string.Empty;
+}
+
+file sealed class AddressDto
+{
+    public string City { get; init; } = string.Empty;
+    public string PostCode { get; init; } = string.Empty;
+}
+
+file sealed class Node
+{
+    public string Name { get; init; } = string.Empty;
+    public Node? Next { get; set; }
 }

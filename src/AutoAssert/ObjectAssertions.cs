@@ -88,5 +88,9 @@ public readonly struct ObjectAssertions
             AssertionHelpers.Fail($"Expected value {AssertionHelpers.Format(_subject)} to match the given predicate, but it did not.", because, becauseArgs);
         }
     }
-}
 
+    public void BeEquivalentTo(object? expected, string because = "", params object[] becauseArgs)
+    {
+        EquivalencyAssertions.AssertEquivalent(_subject, expected, because, becauseArgs);
+    }
+}

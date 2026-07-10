@@ -76,24 +76,9 @@ public readonly struct CollectionAssertions<TItem>
     }
 
     /// <summary>Order-independent equivalence: same items, any order, duplicates counted.</summary>
-    public void BeEquivalentTo(IEnumerable<TItem> expected, string because = "", params object[] becauseArgs)
+    public void BeEquivalentTo(IEnumerable<TItem>? expected, string because = "", params object[] becauseArgs)
     {
-        var actualList = (_subject ?? Enumerable.Empty<TItem>()).ToList();
-        var expectedList = expected.ToList();
-
-        var actualCounts = actualList.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
-        var expectedCounts = expectedList.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
-
-        var equivalent = actualCounts.Count == expectedCounts.Count &&
-                         actualCounts.All(kv => expectedCounts.TryGetValue(kv.Key!, out var c) && c == kv.Value);
-
-        if (!equivalent)
-        {
-            AssertionHelpers.Fail(
-                $"Expected collection to be equivalent to [{string.Join(", ", expectedList.Select(x => AssertionHelpers.Format(x)))}], " +
-                $"but found [{string.Join(", ", actualList.Select(x => AssertionHelpers.Format(x)))}].",
-                because, becauseArgs);
-        }
+        EquivalencyAssertions.AssertEquivalent(_subject, expected, because, becauseArgs);
     }
 
     /// <summary>Order-dependent sequence equality.</summary>

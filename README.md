@@ -33,7 +33,7 @@ dotnet add package Swevo.AutoAssert
 
 | Type | Examples |
 |---|---|
-| Objects | `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeSameAs`, `BeOfType<T>`, `BeAssignableTo<T>`, `Match` |
+| Objects | `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeSameAs`, `BeOfType<T>`, `BeAssignableTo<T>`, `Match`, `BeEquivalentTo` |
 | Strings | `Be`, `Contain`, `StartWith`, `EndWith`, `BeNullOrEmpty`, `HaveLength`, `MatchRegex` |
 | Booleans | `BeTrue`, `BeFalse` |
 | Numerics (int/long/short/byte/double/float/decimal) | `Be`, `BeGreaterThan`, `BeLessThan`, `BeInRange`, `BeApproximately` |
@@ -47,10 +47,49 @@ used to:
 result.Should().Be(42, "the answer should always be 42");
 ```
 
+## BeEquivalentTo
+
+`BeEquivalentTo` performs deep structural comparison of public readable properties and public fields.
+It works for plain objects, nested object graphs, and collections of objects.
+
+```csharp
+using AutoAssert;
+
+var actual = new OrderDto
+{
+    Id = 42,
+    Customer = new CustomerDto { Name = "Ada" },
+    Lines = [new OrderLineDto { Sku = "ABC", Quantity = 2 }]
+};
+
+var expected = new
+{
+    Id = 42,
+    Customer = new { Name = "Ada" },
+    Lines = new[] { new { Sku = "ABC", Quantity = 2 } }
+};
+
+actual.Should().BeEquivalentTo(expected);
+```
+
+Current v1 scope:
+
+- compares public readable properties and public fields recursively
+- treats collections as **order-independent** by default
+- uses value equality for primitives, strings, enums, dates, GUIDs, and other value types
+- ignores extra public members on the actual value when the expected value has fewer members
+- protects against infinite recursion on circular object graphs
+
+Limitations versus FluentAssertions:
+
+- no options API yet (`Excluding`, `WithStrictOrdering`, custom comparers, etc.)
+- failure output stops at the first difference instead of producing a full diff
+- this assertion uses reflection for member traversal, while most other assertions remain direct non-reflective checks
+
 ## Design goals
 
 - **MIT licensed, forever.** No commercial tier, no per-seat fees.
-- **Zero reflection** in the hot assertion path — plain equality/comparison checks.
+- **Zero reflection where possible** — most assertions are plain equality/comparison checks; `BeEquivalentTo` uses public-member traversal.
 - **AOT-safe** — works with Native AOT test hosts.
 - **Framework agnostic** — throws a plain `AssertionFailedException`, recognized as a failure
   by xUnit, NUnit, and MSTest alike.
