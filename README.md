@@ -96,6 +96,22 @@ Limitations versus FluentAssertions:
 - **Familiar syntax** — migrating from FluentAssertions should mostly be a find-and-replace of
   the `using` statement for the assertion types covered above.
 
+## Related Packages
+
+| Package | Downloads | Description |
+|---|---|---|
+| [Swevo.AutoBus](https://www.nuget.org/packages/Swevo.AutoBus) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoBus.svg)](https://www.nuget.org/packages/Swevo.AutoBus) | Free, MIT-licensed in-process message bus for  |
+| [Swevo.AutoBus.RabbitMQ](https://www.nuget.org/packages/Swevo.AutoBus.RabbitMQ) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoBus.RabbitMQ.svg)](https://www.nuget.org/packages/Swevo.AutoBus.RabbitMQ) | RabbitMQ transport for AutoBus |
+| [Swevo.AutoAuth](https://www.nuget.org/packages/Swevo.AutoAuth) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoAuth.svg)](https://www.nuget.org/packages/Swevo.AutoAuth) | A free, MIT-licensed fluent configuration wrapper around OpenIddict for building OAuth2/OIDC token servers in ASP |
+| [Swevo.AutoAudit](https://www.nuget.org/packages/Swevo.AutoAudit) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoAudit.svg)](https://www.nuget.org/packages/Swevo.AutoAudit) | Compile-time audit field generation for EF Core entities using Roslyn source generators |
+| [Swevo.AutoResult](https://www.nuget.org/packages/Swevo.AutoResult) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoResult.svg)](https://www.nuget.org/packages/Swevo.AutoResult) | Compile-time Result<T> monad for  |
+| [Swevo.AutoGuard](https://www.nuget.org/packages/Swevo.AutoGuard) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoGuard.svg)](https://www.nuget.org/packages/Swevo.AutoGuard) | Compile-time guard clauses for  |
+| [Swevo.AutoImage](https://www.nuget.org/packages/Swevo.AutoImage) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoImage.svg)](https://www.nuget.org/packages/Swevo.AutoImage) | A free, MIT-licensed fluent image processing wrapper around SkiaSharp for  |
+| [Swevo.AutoFeatureFlag](https://www.nuget.org/packages/Swevo.AutoFeatureFlag) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoFeatureFlag.svg)](https://www.nuget.org/packages/Swevo.AutoFeatureFlag) | Compile-time feature flag stubs for  |
+| [Swevo.AutoTestData](https://www.nuget.org/packages/Swevo.AutoTestData) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoTestData.svg)](https://www.nuget.org/packages/Swevo.AutoTestData) | Compile-time test data builders for  |
+
+---
+
 ## 💼 Need .NET consulting?
 
 I'm the author of AutoAssert and a suite of compile-time source generators
