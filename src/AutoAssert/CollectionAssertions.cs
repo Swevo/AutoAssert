@@ -161,14 +161,14 @@ public readonly struct CollectionAssertions<TItem>
     /// <summary>Order-independent equivalence: same items, any order, duplicates counted.</summary>
     public AndConstraint<CollectionAssertions<TItem>> BeEquivalentTo(IEnumerable<TItem>? expected, string because = "", params object[] becauseArgs)
     {
-        EquivalencyAssertions.AssertEquivalent(_subject, expected, EquivalencyOptions.Default, because, becauseArgs);
+        EquivalencyAssertions.AssertEquivalent(_subject, expected, AssertionConfig.CreateDefaultEquivalencyOptions(), because, becauseArgs);
         return new AndConstraint<CollectionAssertions<TItem>>(this);
     }
 
     /// <summary>Equivalence with configurable options, e.g. <c>.WithStrictOrdering()</c> or <c>.Excluding(...)</c>.</summary>
     public AndConstraint<CollectionAssertions<TItem>> BeEquivalentTo(IEnumerable<TItem>? expected, Action<EquivalencyOptions> config, string because = "", params object[] becauseArgs)
     {
-        var options = new EquivalencyOptions();
+        var options = AssertionConfig.CreateDefaultEquivalencyOptions();
         config(options);
         EquivalencyAssertions.AssertEquivalent(_subject, expected, options, because, becauseArgs);
         return new AndConstraint<CollectionAssertions<TItem>>(this);

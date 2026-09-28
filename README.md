@@ -153,6 +153,49 @@ backtracking search used to detect whether a perfect match exists at all) — in
 many near-duplicate items it may not report the *minimal* possible diff, though it always reports
 a diff for every expected item.
 
+### Global equivalency defaults
+
+Configure `BeEquivalentTo` options once for the whole test suite (e.g. always excluding an
+audit-tracking `Id`/`CreatedAt` member), instead of repeating the same options at every call
+site:
+
+```csharp
+// e.g. in a test assembly module initializer or a shared fixture's constructor
+AssertionConfig.ConfigureEquivalency(options => options
+    .Excluding("Id")
+    .Excluding("CreatedAt"));
+```
+
+Every `BeEquivalentTo(expected)` call that doesn't specify its own options callback picks up
+these defaults automatically. A call that *does* provide `options => ...` still starts from the
+global defaults and layers its own configuration on top. `AssertionConfig.ResetEquivalencyDefaults()`
+restores the out-of-the-box (no exclusions, order-independent) behavior.
+
+> **Note:** this is process-wide mutable state, same trade-off FluentAssertions' own
+> `AssertionOptions` has — avoid relying on it in test suites that run test classes in parallel
+> with per-class differing configuration, since configuration set by one test can affect another
+> running concurrently.
+
+## Snapshot testing
+
+`MatchSnapshot()` serializes the subject to indented JSON and compares it against a baseline file
+stored in a `__snapshots__` folder next to the calling test file — no separate snapshot library
+needed:
+
+```csharp
+var result = BuildOrderSummary();
+
+result.Should().MatchSnapshot();
+```
+
+- **First run**: no baseline exists yet, so one is written (`__snapshots__/{TestMethodName}.snapshot.json`)
+  and the assertion passes. Commit this file to source control as your golden file.
+- **Subsequent runs**: the current value is compared against the committed baseline; a mismatch
+  throws an `AssertionFailedException` showing both the expected (baseline) and actual JSON.
+- Use `MatchSnapshot("someName")` to take multiple named snapshots within a single test method.
+- If a change is intentional, delete the corresponding `__snapshots__/*.snapshot.json` file and
+  re-run the test to record a new baseline.
+
 ## Custom assertions
 
 Every assertion type is a public struct, so you can extend AutoAssert with your own domain-specific

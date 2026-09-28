@@ -11,6 +11,8 @@ public readonly struct ObjectAssertions
 
     internal ObjectAssertions(object? subject) => _subject = subject;
 
+    internal object? Subject => _subject;
+
     public AndConstraint<ObjectAssertions> Be(object? expected, string because = "", params object[] becauseArgs)
     {
         if (!Equals(_subject, expected))
@@ -109,13 +111,13 @@ public readonly struct ObjectAssertions
 
     public AndConstraint<ObjectAssertions> BeEquivalentTo(object? expected, string because = "", params object[] becauseArgs)
     {
-        EquivalencyAssertions.AssertEquivalent(_subject, expected, EquivalencyOptions.Default, because, becauseArgs);
+        EquivalencyAssertions.AssertEquivalent(_subject, expected, AssertionConfig.CreateDefaultEquivalencyOptions(), because, becauseArgs);
         return new AndConstraint<ObjectAssertions>(this);
     }
 
     public AndConstraint<ObjectAssertions> BeEquivalentTo(object? expected, Action<EquivalencyOptions> config, string because = "", params object[] becauseArgs)
     {
-        var options = new EquivalencyOptions();
+        var options = AssertionConfig.CreateDefaultEquivalencyOptions();
         config(options);
         EquivalencyAssertions.AssertEquivalent(_subject, expected, options, because, becauseArgs);
         return new AndConstraint<ObjectAssertions>(this);

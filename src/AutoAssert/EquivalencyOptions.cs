@@ -8,8 +8,6 @@ namespace AutoAssert;
 /// </summary>
 public sealed class EquivalencyOptions
 {
-    internal static readonly EquivalencyOptions Default = new();
-
     private readonly HashSet<string> _excludedMemberNames = new(StringComparer.Ordinal);
 
     /// <summary>When set, collection members must match item-for-item in the given order (default: order-independent).</summary>
@@ -37,6 +35,18 @@ public sealed class EquivalencyOptions
     }
 
     internal bool IsExcluded(string memberName) => _excludedMemberNames.Contains(memberName);
+
+    /// <summary>Creates an independent copy, used to seed a per-call configuration from global defaults.</summary>
+    internal EquivalencyOptions Clone()
+    {
+        var clone = new EquivalencyOptions { StrictOrdering = StrictOrdering };
+        foreach (var name in _excludedMemberNames)
+        {
+            clone._excludedMemberNames.Add(name);
+        }
+
+        return clone;
+    }
 
     private static string GetMemberName<T, TMember>(Expression<Func<T, TMember>> expression)
     {
