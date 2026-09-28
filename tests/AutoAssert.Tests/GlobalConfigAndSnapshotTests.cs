@@ -118,4 +118,61 @@ public class SnapshotAssertionsTests : IDisposable
             File.Delete(path);
         }
     }
+
+    private class Ticket
+    {
+        public Guid Id { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string Title { get; set; } = "";
+    }
+
+    [Fact]
+    public void MatchSnapshot_With_Scrub_Ignores_Non_Deterministic_Values()
+    {
+        var path = Path.Combine(_snapshotDirectory, "MatchSnapshot_With_Scrub_Ignores_Non_Deterministic_Values.snapshot.json");
+        Directory.CreateDirectory(_snapshotDirectory);
+        File.WriteAllText(
+            path,
+            System.Text.Json.JsonSerializer.Serialize(
+                new Ticket { Id = Guid.NewGuid(), CreatedAt = new DateTime(2020, 1, 1), Title = "Fix bug" },
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+        try
+        {
+            // A different GUID and timestamp than the baseline, but the same Title — should pass
+            // when both are scrubbed away.
+            var subject = new Ticket { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Title = "Fix bug" };
+
+            subject.Should().MatchSnapshot(
+                scrub: SnapshotScrubbers.Combine(SnapshotScrubbers.Guids(), SnapshotScrubbers.IsoTimestamps()));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void MatchSnapshot_With_Scrub_Still_Fails_On_Real_Differences()
+    {
+        var path = Path.Combine(_snapshotDirectory, "MatchSnapshot_With_Scrub_Still_Fails_On_Real_Differences.snapshot.json");
+        Directory.CreateDirectory(_snapshotDirectory);
+        File.WriteAllText(
+            path,
+            System.Text.Json.JsonSerializer.Serialize(
+                new Ticket { Id = Guid.NewGuid(), CreatedAt = new DateTime(2020, 1, 1), Title = "Fix bug" },
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+        try
+        {
+            var subject = new Ticket { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Title = "Different title" };
+
+            Assert.Throws<AssertionFailedException>(() => subject.Should().MatchSnapshot(
+                scrub: SnapshotScrubbers.Combine(SnapshotScrubbers.Guids(), SnapshotScrubbers.IsoTimestamps())));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
 }

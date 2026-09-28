@@ -11,6 +11,9 @@ public readonly struct StringAssertions
 
     internal StringAssertions(string? subject) => _subject = subject;
 
+    /// <summary>The underlying string being asserted against (used by companion packages such as AutoAssert.Json).</summary>
+    public string? Subject => _subject;
+
     public AndConstraint<StringAssertions> Be(string? expected, string because = "", params object[] becauseArgs)
     {
         if (!string.Equals(_subject, expected, StringComparison.Ordinal))

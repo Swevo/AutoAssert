@@ -22,10 +22,16 @@ public static class SnapshotAssertionExtensions
     /// Optional discriminator when a single test method takes more than one snapshot
     /// (e.g. <c>MatchSnapshot("before")</c> / <c>MatchSnapshot("after")</c>).
     /// </param>
+    /// <param name="scrub">
+    /// Optional text normalizer (see <see cref="SnapshotScrubbers"/>) applied to both the
+    /// baseline and the current value before comparison, so non-deterministic content (GUIDs,
+    /// timestamps, etc.) doesn't cause spurious snapshot failures.
+    /// </param>
     public static AndConstraint<ObjectAssertions> MatchSnapshot(
         this ObjectAssertions assertions,
         string? snapshotName = null,
         string because = "",
+        Func<string, string>? scrub = null,
         [CallerFilePath] string sourceFilePath = "",
         [CallerMemberName] string memberName = "",
         params object[] becauseArgs)
@@ -41,7 +47,16 @@ public static class SnapshotAssertionExtensions
         }
 
         var expectedJson = File.ReadAllText(filePath);
-        if (!string.Equals(Normalize(expectedJson), Normalize(actualJson), StringComparison.Ordinal))
+        var expectedNormalized = Normalize(expectedJson);
+        var actualNormalized = Normalize(actualJson);
+
+        if (scrub is not null)
+        {
+            expectedNormalized = scrub(expectedNormalized);
+            actualNormalized = scrub(actualNormalized);
+        }
+
+        if (!string.Equals(expectedNormalized, actualNormalized, StringComparison.Ordinal))
         {
             AssertionHelpers.Fail(
                 $"Snapshot '{Path.GetFileName(filePath)}' does not match.{Environment.NewLine}" +

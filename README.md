@@ -195,6 +195,13 @@ result.Should().MatchSnapshot();
 - Use `MatchSnapshot("someName")` to take multiple named snapshots within a single test method.
 - If a change is intentional, delete the corresponding `__snapshots__/*.snapshot.json` file and
   re-run the test to record a new baseline.
+- Pass `scrub:` to normalize non-deterministic values (generated GUIDs, "now"-based timestamps)
+  before comparison, so they don't cause spurious snapshot failures:
+
+```csharp
+result.Should().MatchSnapshot(
+    scrub: SnapshotScrubbers.Combine(SnapshotScrubbers.Guids(), SnapshotScrubbers.IsoTimestamps()));
+```
 
 ## Custom assertions
 
@@ -219,6 +226,7 @@ public static class MyCustomAssertionExtensions
 | [`Swevo.AutoAssert.Analyzers`](src/AutoAssert.Analyzers) | Dev-only Roslyn analyzers that catch discarded `.Should()` calls and unawaited async assertions at compile time. |
 | [`Swevo.AutoAssert.Generator`](src/AutoAssert.Generator) | Source generator that emits a reflection-free `BeEquivalentTo` comparer for types marked `[GenerateEquivalencyComparer]` — faster and AOT-friendly. |
 | [`Swevo.AutoAssert.AspNetCore`](src/AutoAssert.AspNetCore) | Fluent `HttpResponseMessage` assertions (status code, headers, content type, string/JSON body) for `WebApplicationFactory`/`HttpClient` integration tests. |
+| [`Swevo.AutoAssert.Json`](src/AutoAssert.Json) | Fluent assertions on raw JSON strings (`BeValidJson`, `HaveJsonProperty`, `BeEquivalentToJson`) with full structural diffs. |
 
 ## Design goals
 
