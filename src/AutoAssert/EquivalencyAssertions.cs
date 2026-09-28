@@ -26,7 +26,7 @@ internal static class EquivalencyAssertions
         AssertionHelpers.Fail(message, because, becauseArgs);
     }
 
-    private static bool TryCompare(object? actual, object? expected, string path, HashSet<ObjectReferencePair> visited, EquivalencyOptions options, List<string> failures)
+    internal static bool TryCompare(object? actual, object? expected, string path, HashSet<ObjectReferencePair> visited, EquivalencyOptions options, List<string> failures)
     {
         if (ReferenceEquals(actual, expected))
         {
@@ -41,6 +41,14 @@ internal static class EquivalencyAssertions
 
         var actualType = actual.GetType();
         var expectedType = expected.GetType();
+
+        // Prefer a compile-time-generated comparer (see AutoAssert.Generator /
+        // [GenerateEquivalencyComparer]) when both sides are exactly the same registered type —
+        // it compares members via direct, non-reflective property/field access.
+        if (actualType == expectedType && GeneratedEquivalencyRegistry.TryGet(actualType, out var generatedComparer))
+        {
+            return generatedComparer!(actual, expected, path, options, failures);
+        }
 
         if (IsSimple(actualType) && IsSimple(expectedType))
         {
@@ -363,7 +371,7 @@ internal static class EquivalencyAssertions
         }
     }
 
-    private readonly struct ObjectReferencePair : IEquatable<ObjectReferencePair>
+    internal readonly struct ObjectReferencePair : IEquatable<ObjectReferencePair>
     {
         private readonly object _actual;
         private readonly object _expected;

@@ -2,9 +2,13 @@
   <Folder Name="/src/">
     <Project Path="src/AutoAssert/AutoAssert.csproj" />
     <Project Path="src/AutoAssert.Analyzers/AutoAssert.Analyzers.csproj" />
+    <Project Path="src/AutoAssert.Generator/AutoAssert.Generator.csproj" />
+    <Project Path="src/AutoAssert.AspNetCore/AutoAssert.AspNetCore.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AutoAssert.Tests/AutoAssert.Tests.csproj" />
     <Project Path="tests/AutoAssert.Analyzers.Tests/AutoAssert.Analyzers.Tests.csproj" />
+    <Project Path="tests/AutoAssert.Generator.Tests/AutoAssert.Generator.Tests.csproj" />
+    <Project Path="tests/AutoAssert.AspNetCore.Tests/AutoAssert.AspNetCore.Tests.csproj" />
   </Folder>
 </Solution>

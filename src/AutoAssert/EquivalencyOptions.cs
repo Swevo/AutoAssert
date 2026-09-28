@@ -34,7 +34,8 @@ public sealed class EquivalencyOptions
         return this;
     }
 
-    internal bool IsExcluded(string memberName) => _excludedMemberNames.Contains(memberName);
+    /// <summary>Returns whether a member with this name is excluded from comparison (also used by AutoAssert.Generator-emitted comparers).</summary>
+    public bool IsExcluded(string memberName) => _excludedMemberNames.Contains(memberName);
 
     /// <summary>Creates an independent copy, used to seed a per-call configuration from global defaults.</summary>
     internal EquivalencyOptions Clone()

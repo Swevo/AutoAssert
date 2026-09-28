@@ -212,6 +212,14 @@ public static class MyCustomAssertionExtensions
 }
 ```
 
+## Companion packages
+
+| Package | Description |
+|---|---|
+| [`Swevo.AutoAssert.Analyzers`](src/AutoAssert.Analyzers) | Dev-only Roslyn analyzers that catch discarded `.Should()` calls and unawaited async assertions at compile time. |
+| [`Swevo.AutoAssert.Generator`](src/AutoAssert.Generator) | Source generator that emits a reflection-free `BeEquivalentTo` comparer for types marked `[GenerateEquivalencyComparer]` — faster and AOT-friendly. |
+| [`Swevo.AutoAssert.AspNetCore`](src/AutoAssert.AspNetCore) | Fluent `HttpResponseMessage` assertions (status code, headers, content type, string/JSON body) for `WebApplicationFactory`/`HttpClient` integration tests. |
+
 ## Design goals
 
 - **MIT licensed, forever.** No commercial tier, no per-seat fees.

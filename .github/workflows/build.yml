@@ -54,6 +54,8 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
       - run: dotnet pack src/AutoAssert/AutoAssert.csproj --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
       - run: dotnet pack src/AutoAssert.Analyzers/AutoAssert.Analyzers.csproj --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
+      - run: dotnet pack src/AutoAssert.Generator/AutoAssert.Generator.csproj --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
+      - run: dotnet pack src/AutoAssert.AspNetCore/AutoAssert.AspNetCore.csproj --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
       - uses: actions/upload-artifact@v4
         with:
           name: nuget-package
