@@ -11,7 +11,7 @@ public readonly struct ObjectAssertions
 
     internal ObjectAssertions(object? subject) => _subject = subject;
 
-    public void Be(object? expected, string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> Be(object? expected, string because = "", params object[] becauseArgs)
     {
         if (!Equals(_subject, expected))
         {
@@ -19,9 +19,11 @@ public readonly struct ObjectAssertions
                 $"Expected {AssertionHelpers.Format(expected)}, but found {AssertionHelpers.Format(_subject)}.",
                 because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void NotBe(object? unexpected, string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> NotBe(object? unexpected, string because = "", params object[] becauseArgs)
     {
         if (Equals(_subject, unexpected))
         {
@@ -29,68 +31,93 @@ public readonly struct ObjectAssertions
                 $"Expected value not to be {AssertionHelpers.Format(unexpected)}, but it was.",
                 because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void BeNull(string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> BeNull(string because = "", params object[] becauseArgs)
     {
         if (_subject is not null)
         {
             AssertionHelpers.Fail($"Expected value to be null, but found {AssertionHelpers.Format(_subject)}.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void NotBeNull(string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> NotBeNull(string because = "", params object[] becauseArgs)
     {
         if (_subject is null)
         {
             AssertionHelpers.Fail("Expected value not to be null, but it was null.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void BeSameAs(object? expected, string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> BeSameAs(object? expected, string because = "", params object[] becauseArgs)
     {
         if (!ReferenceEquals(_subject, expected))
         {
             AssertionHelpers.Fail("Expected value to be the same instance as the expected object, but it was not.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void NotBeSameAs(object? unexpected, string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> NotBeSameAs(object? unexpected, string because = "", params object[] becauseArgs)
     {
         if (ReferenceEquals(_subject, unexpected))
         {
             AssertionHelpers.Fail("Expected value not to be the same instance as the given object, but it was.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void BeOfType<TType>(string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> BeOfType<TType>(string because = "", params object[] becauseArgs)
     {
         if (_subject is null || _subject.GetType() != typeof(TType))
         {
             var actualType = _subject?.GetType().Name ?? "null";
             AssertionHelpers.Fail($"Expected type to be {typeof(TType).Name}, but found {actualType}.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void BeAssignableTo<TType>(string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> BeAssignableTo<TType>(string because = "", params object[] becauseArgs)
     {
         if (_subject is not TType)
         {
             var actualType = _subject?.GetType().Name ?? "null";
             AssertionHelpers.Fail($"Expected type to be assignable to {typeof(TType).Name}, but found {actualType}.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void Match(Func<object?, bool> predicate, string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> Match(Func<object?, bool> predicate, string because = "", params object[] becauseArgs)
     {
         if (!predicate(_subject))
         {
             AssertionHelpers.Fail($"Expected value {AssertionHelpers.Format(_subject)} to match the given predicate, but it did not.", because, becauseArgs);
         }
+
+        return new AndConstraint<ObjectAssertions>(this);
     }
 
-    public void BeEquivalentTo(object? expected, string because = "", params object[] becauseArgs)
+    public AndConstraint<ObjectAssertions> BeEquivalentTo(object? expected, string because = "", params object[] becauseArgs)
     {
-        EquivalencyAssertions.AssertEquivalent(_subject, expected, because, becauseArgs);
+        EquivalencyAssertions.AssertEquivalent(_subject, expected, EquivalencyOptions.Default, because, becauseArgs);
+        return new AndConstraint<ObjectAssertions>(this);
+    }
+
+    public AndConstraint<ObjectAssertions> BeEquivalentTo(object? expected, Action<EquivalencyOptions> config, string because = "", params object[] becauseArgs)
+    {
+        var options = new EquivalencyOptions();
+        config(options);
+        EquivalencyAssertions.AssertEquivalent(_subject, expected, options, because, becauseArgs);
+        return new AndConstraint<ObjectAssertions>(this);
     }
 }

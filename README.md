@@ -24,6 +24,40 @@ items.Should().HaveCount(3);
 action.Should().Throw<InvalidOperationException>().WithMessage("boom");
 ```
 
+## Fluent chaining
+
+Every assertion method returns an `AndConstraint<T>`, so you can chain multiple checks on the
+same subject with `.And`:
+
+```csharp
+"hello world".Should()
+    .NotBeNullOrEmpty()
+    .And.StartWith("hello")
+    .And.EndWith("world")
+    .And.Contain("lo wo");
+
+5.Should().BePositive().And.BeLessThan(10);
+```
+
+> **Breaking change note (v2.0.0):** assertion methods used to return `void`; they now return
+> `AndConstraint<T>`. Existing call sites keep working unchanged (the return value can simply
+> be discarded) — only code that explicitly typed a variable/delegate as `void` around a call
+> would need updating, which is extremely rare for fluent assertion call sites.
+
+## AssertionScope
+
+Wrap multiple assertions in an `AssertionScope` to collect **all** failures and report them
+together in a single exception, instead of stopping at the first one:
+
+```csharp
+using (new AssertionScope())
+{
+    result.Name.Should().Be("Ada");
+    result.Age.Should().Be(30);
+    result.Email.Should().NotBeNullOrEmpty();
+} // throws one AssertionFailedException listing every failure, if any occurred
+```
+
 ## Install
 
 ```bash
@@ -35,11 +69,18 @@ dotnet add package Swevo.AutoAssert
 | Type | Examples |
 |---|---|
 | Objects | `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeSameAs`, `BeOfType<T>`, `BeAssignableTo<T>`, `Match`, `BeEquivalentTo` |
-| Strings | `Be`, `Contain`, `StartWith`, `EndWith`, `BeNullOrEmpty`, `HaveLength`, `MatchRegex` |
+| Strings | `Be`, `Contain`, `StartWith`, `EndWith`, `NotStartWith`, `NotEndWith`, `BeNullOrEmpty`, `HaveLength`, `MatchRegex`, `NotMatchRegex`, `BeEquivalentTo`, `ContainEquivalentOf`, `Match` (wildcards), `BeUpperCased`, `BeLowerCased` |
 | Booleans | `BeTrue`, `BeFalse` |
-| Numerics (int/long/short/byte/double/float/decimal) | `Be`, `BeGreaterThan`, `BeLessThan`, `BeInRange`, `BeApproximately` |
-| Collections | `HaveCount`, `Contain`, `BeEquivalentTo`, `Equal`, `ContainSingle`, `OnlyHaveUniqueItems`, `AllSatisfy` |
-| Exceptions | `Throw<T>`, `ThrowAsync<T>`, `NotThrow`, `NotThrowAsync`, `WithMessage`, `WithInnerException<T>` |
+| Numerics (int/long/short/byte/uint/ulong/ushort/sbyte/double/float/decimal) | `Be`, `BeGreaterThan`, `BeLessThan`, `BeInRange`, `BeApproximately`, `BePositive`, `BeNegative`, `BeOneOf`, `BeNaN`/`NotBeNaN` (double/float) |
+| Collections | `HaveCount`, `HaveCountGreaterThan`, `HaveCountLessThan`, `Contain`, `Contain(predicate)`, `ContainInOrder`, `BeEquivalentTo`, `Equal`, `ContainSingle`, `OnlyHaveUniqueItems`, `AllSatisfy`, `SatisfyRespectively`, `BeInAscendingOrder`, `BeInDescendingOrder` |
+| Dictionaries | `ContainKey`, `NotContainKey`, `ContainValue`, `NotContainValue`, `ContainKeyAndValue`, `HaveCount`, `BeEmpty`, `NotBeEmpty` |
+| Exceptions | `Throw<T>`, `ThrowAsync<T>`, `NotThrow`, `NotThrow<T>`, `NotThrowAsync`, `WithMessage`, `WithInnerException<T>`, `Where(predicate)`, `WithParameterName` |
+| Value-returning functions | `Func<T>.Should().Throw<TException>()/.NotThrow()`, `Func<Task<T>>.Should().ThrowAsync<TException>()/.NotThrowAsync()` (both return the resolved value) |
+| Dates/times | `DateTime`/`DateTimeOffset`: `Be`, `NotBe`, `BeBefore`, `BeAfter`, `BeOnOrBefore`, `BeOnOrAfter`, `BeCloseTo`, `BeSameDateAs`. `TimeSpan`: `Be`, `BeGreaterThan`, `BeLessThan`, `BeCloseTo` |
+| Guid | `Be`, `NotBe`, `BeEmpty`, `NotBeEmpty` |
+| Nullable&lt;T&gt; | `HaveValue`, `NotHaveValue`, `Be`, `NotBe` |
+| Enums | `Be`, `NotBe`, `HaveFlag`, `NotHaveFlag` |
+| Execution time | `action.ExecutionTime().Should().BeLessThan/BeLessOrEqualTo/BeGreaterThan`, `action.Should().CompleteWithin(TimeSpan)`, `func.Should().CompleteWithinAsync(TimeSpan)` |
 
 Every assertion accepts an optional `because` reasoning clause, matching the syntax you're
 used to:
@@ -51,7 +92,8 @@ result.Should().Be(42, "the answer should always be 42");
 ## BeEquivalentTo
 
 `BeEquivalentTo` performs deep structural comparison of public readable properties and public fields.
-It works for plain objects, nested object graphs, and collections of objects.
+It works for plain objects, nested object graphs, and collections of objects, and reports a
+**full diff** of every mismatched member (not just the first one found).
 
 ```csharp
 using AutoAssert;
@@ -73,19 +115,46 @@ var expected = new
 actual.Should().BeEquivalentTo(expected);
 ```
 
-Current v1 scope:
+Configure the comparison with an options callback:
 
-- compares public readable properties and public fields recursively
-- treats collections as **order-independent** by default
+```csharp
+actual.Should().BeEquivalentTo(expected, options => options
+    .Excluding(x => x.Id)
+    .Excluding("SomeFieldName")
+    .WithStrictOrdering()); // require collections to match in the same order
+```
+
+Current scope:
+
+- compares public readable properties and public fields recursively, reporting every mismatched
+  member (not only the first) at any depth
+- treats collections as **order-independent** by default; `WithStrictOrdering()` switches to
+  positional (order-dependent) comparison
+- `Excluding(...)` skips named members or members selected via an expression, at the top level
 - uses value equality for primitives, strings, enums, dates, GUIDs, and other value types
 - ignores extra public members on the actual value when the expected value has fewer members
 - protects against infinite recursion on circular object graphs
 
-Limitations versus FluentAssertions:
+Remaining limitation versus FluentAssertions: for order-independent collections, once a valid
+item pairing is found but one pair doesn't match, only that pair's full diff is reported (not
+every possible mismatch across the whole collection). Full-diff for plain object graphs has no
+such limitation.
 
-- no options API yet (`Excluding`, `WithStrictOrdering`, custom comparers, etc.)
-- failure output stops at the first difference instead of producing a full diff
-- this assertion uses reflection for member traversal, while most other assertions remain direct non-reflective checks
+## Custom assertions
+
+Every assertion type is a public struct, so you can extend AutoAssert with your own domain-specific
+assertions exactly like the built-in `FloatingPointAssertionExtensions` does for `NumericAssertions<T>`:
+
+```csharp
+public static class MyCustomAssertionExtensions
+{
+    public static AndConstraint<StringAssertions> BeAValidSku(this StringAssertions assertions, string because = "", params object[] becauseArgs)
+    {
+        // use AssertionHelpers.Fail(...) to report failures consistently (respects AssertionScope)
+        return new AndConstraint<StringAssertions>(assertions);
+    }
+}
+```
 
 ## Design goals
 

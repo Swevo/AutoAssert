@@ -9,25 +9,33 @@ internal static class EquivalencyAssertions
 {
     private static readonly ConcurrentDictionary<Type, MemberDescriptor[]> MembersByType = new();
 
-    public static void AssertEquivalent(object? actual, object? expected, string because, object[] becauseArgs)
+    public static void AssertEquivalent(object? actual, object? expected, EquivalencyOptions options, string because, object[] becauseArgs)
     {
-        if (!TryCompare(actual, expected, string.Empty, new HashSet<ObjectReferencePair>(), out var failureMessage))
+        var failures = new List<string>();
+        TryCompare(actual, expected, string.Empty, new HashSet<ObjectReferencePair>(), options, failures);
+
+        if (failures.Count == 0)
         {
-            AssertionHelpers.Fail(failureMessage, because, becauseArgs);
+            return;
         }
+
+        var message = failures.Count == 1
+            ? failures[0]
+            : $"Found {failures.Count} difference(s):" + string.Concat(failures.Select((failure, index) => Environment.NewLine + $"  {index + 1}) {failure}"));
+
+        AssertionHelpers.Fail(message, because, becauseArgs);
     }
 
-    private static bool TryCompare(object? actual, object? expected, string path, HashSet<ObjectReferencePair> visited, out string failureMessage)
+    private static bool TryCompare(object? actual, object? expected, string path, HashSet<ObjectReferencePair> visited, EquivalencyOptions options, List<string> failures)
     {
         if (ReferenceEquals(actual, expected))
         {
-            failureMessage = string.Empty;
             return true;
         }
 
         if (actual is null || expected is null)
         {
-            failureMessage = BuildValueMismatchMessage(path, expected, actual);
+            failures.Add(BuildValueMismatchMessage(path, expected, actual));
             return false;
         }
 
@@ -38,22 +46,21 @@ internal static class EquivalencyAssertions
         {
             if (Equals(actual, expected))
             {
-                failureMessage = string.Empty;
                 return true;
             }
 
-            failureMessage = BuildValueMismatchMessage(path, expected, actual);
+            failures.Add(BuildValueMismatchMessage(path, expected, actual));
             return false;
         }
 
         if (IsEnumerable(actual) && IsEnumerable(expected))
         {
-            return TryCompareEnumerables(ToObjectList((IEnumerable)actual), ToObjectList((IEnumerable)expected), path, visited, out failureMessage);
+            return TryCompareEnumerables(ToObjectList((IEnumerable)actual), ToObjectList((IEnumerable)expected), path, visited, options, failures);
         }
 
         if (IsSimple(actualType) || IsSimple(expectedType))
         {
-            failureMessage = BuildValueMismatchMessage(path, expected, actual);
+            failures.Add(BuildValueMismatchMessage(path, expected, actual));
             return false;
         }
 
@@ -62,38 +69,47 @@ internal static class EquivalencyAssertions
             var pair = new ObjectReferencePair(actual, expected);
             if (!visited.Add(pair))
             {
-                failureMessage = string.Empty;
                 return true;
             }
         }
 
-        return TryCompareMembers(actual, expected, path, visited, out failureMessage);
+        return TryCompareMembers(actual, expected, path, visited, options, failures);
     }
 
-    private static bool TryCompareMembers(object actual, object expected, string path, HashSet<ObjectReferencePair> visited, out string failureMessage)
+    /// <summary>
+    /// Compares every (non-excluded) member of <paramref name="expected"/>'s type, collecting a
+    /// failure for *every* mismatching member instead of stopping at the first one — so a single
+    /// <c>BeEquivalentTo</c> failure reports the full diff, not just the first difference found.
+    /// </summary>
+    private static bool TryCompareMembers(object actual, object expected, string path, HashSet<ObjectReferencePair> visited, EquivalencyOptions options, List<string> failures)
     {
-        var actualMembers = GetMembers(actual.GetType());
-        var actualMembersByName = actualMembers.ToDictionary(member => member.Name, StringComparer.Ordinal);
+        var actualMembersByName = GetMembers(actual.GetType()).ToDictionary(member => member.Name, StringComparer.Ordinal);
+        var ok = true;
 
         foreach (var expectedMember in GetMembers(expected.GetType()).OrderBy(member => member.Name, StringComparer.Ordinal))
         {
+            if (options.IsExcluded(expectedMember.Name))
+            {
+                continue;
+            }
+
             if (!actualMembersByName.TryGetValue(expectedMember.Name, out var actualMember))
             {
-                failureMessage = BuildMissingMemberMessage(AppendMemberPath(path, expectedMember.Name));
-                return false;
+                failures.Add(BuildMissingMemberMessage(AppendMemberPath(path, expectedMember.Name)));
+                ok = false;
+                continue;
             }
 
             var actualValue = actualMember.GetValue(actual);
             var expectedValue = expectedMember.GetValue(expected);
 
-            if (!TryCompare(actualValue, expectedValue, AppendMemberPath(path, expectedMember.Name), visited, out failureMessage))
+            if (!TryCompare(actualValue, expectedValue, AppendMemberPath(path, expectedMember.Name), visited, options, failures))
             {
-                return false;
+                ok = false;
             }
         }
 
-        failureMessage = string.Empty;
-        return true;
+        return ok;
     }
 
     private static bool TryCompareEnumerables(
@@ -101,32 +117,52 @@ internal static class EquivalencyAssertions
         IReadOnlyList<object?> expectedItems,
         string path,
         HashSet<ObjectReferencePair> visited,
-        out string failureMessage)
+        EquivalencyOptions options,
+        List<string> failures)
     {
         if (actualItems.Count != expectedItems.Count)
         {
-            failureMessage = BuildCountMismatchMessage(path, expectedItems.Count, actualItems.Count);
+            failures.Add(BuildCountMismatchMessage(path, expectedItems.Count, actualItems.Count));
             return false;
         }
 
         if (expectedItems.Count == 0)
         {
-            failureMessage = string.Empty;
             return true;
         }
 
-        var matchedActual = new bool[actualItems.Count];
-        return TryMatchCollectionItem(0, matchedActual, visited, out failureMessage);
+        if (options.StrictOrdering)
+        {
+            var ok = true;
+            for (var i = 0; i < expectedItems.Count; i++)
+            {
+                if (!TryCompare(actualItems[i], expectedItems[i], AppendIndexPath(path, i), visited, options, failures))
+                {
+                    ok = false;
+                }
+            }
 
-        bool TryMatchCollectionItem(int expectedIndex, bool[] usedActual, HashSet<ObjectReferencePair> currentVisited, out string message)
+            return ok;
+        }
+
+        var matchedActual = new bool[actualItems.Count];
+        var success = TryMatchCollectionItem(0, matchedActual, visited, out var reportedFailures);
+        if (!success)
+        {
+            failures.AddRange(reportedFailures);
+        }
+
+        return success;
+
+        bool TryMatchCollectionItem(int expectedIndex, bool[] usedActual, HashSet<ObjectReferencePair> currentVisited, out List<string> resultFailures)
         {
             if (expectedIndex == expectedItems.Count)
             {
-                message = string.Empty;
+                resultFailures = [];
                 return true;
             }
 
-            string? bestFailure = null;
+            List<string>? bestAttemptFailures = null;
 
             for (var actualIndex = 0; actualIndex < actualItems.Count; actualIndex++)
             {
@@ -136,24 +172,25 @@ internal static class EquivalencyAssertions
                 }
 
                 var branchVisited = new HashSet<ObjectReferencePair>(currentVisited);
-                if (!TryCompare(actualItems[actualIndex], expectedItems[expectedIndex], AppendIndexPath(path, expectedIndex), branchVisited, out var comparisonFailure))
+                var attemptFailures = new List<string>();
+                if (!TryCompare(actualItems[actualIndex], expectedItems[expectedIndex], AppendIndexPath(path, expectedIndex), branchVisited, options, attemptFailures))
                 {
-                    bestFailure ??= comparisonFailure;
+                    bestAttemptFailures ??= attemptFailures;
                     continue;
                 }
 
                 usedActual[actualIndex] = true;
 
-                if (TryMatchCollectionItem(expectedIndex + 1, usedActual, branchVisited, out message))
+                if (TryMatchCollectionItem(expectedIndex + 1, usedActual, branchVisited, out resultFailures))
                 {
                     return true;
                 }
 
                 usedActual[actualIndex] = false;
-                bestFailure ??= message;
+                bestAttemptFailures ??= resultFailures;
             }
 
-            message = bestFailure ?? BuildMissingCollectionItemMessage(path, expectedIndex, expectedItems[expectedIndex]);
+            resultFailures = bestAttemptFailures ?? [BuildMissingCollectionItemMessage(path, expectedIndex, expectedItems[expectedIndex])];
             return false;
         }
     }

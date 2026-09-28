@@ -24,7 +24,15 @@ internal static class AssertionHelpers
 
     public static void Fail(string message, string because, object[] becauseArgs)
     {
-        throw new AssertionFailedException(message + BuildReason(because, becauseArgs));
+        var fullMessage = message + BuildReason(because, becauseArgs);
+
+        if (AssertionScope.Current is { } scope)
+        {
+            scope.AddFailure(fullMessage);
+            return;
+        }
+
+        throw new AssertionFailedException(fullMessage);
     }
 
     public static string Format(object? value)
