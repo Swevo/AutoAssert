@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AutoAssert/AutoAssert.csproj" />
+    <Project Path="src/AutoAssert.Analyzers/AutoAssert.Analyzers.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AutoAssert.Tests/AutoAssert.Tests.csproj" />
+    <Project Path="tests/AutoAssert.Analyzers.Tests/AutoAssert.Analyzers.Tests.csproj" />
   </Folder>
 </Solution>

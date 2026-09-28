@@ -118,6 +118,28 @@ public class EquivalencyOptionsTests
 
         actual.Should().BeEquivalentTo(expected);
     }
+
+    [Fact]
+    public void BeEquivalentTo_Reports_Diff_For_Every_Item_In_Mismatched_Collection()
+    {
+        var actual = new[]
+        {
+            new Person { Name = "Alice", Age = 30 },
+            new Person { Name = "Bob", Age = 40 },
+        };
+        var expected = new[]
+        {
+            new Person { Name = "Alice", Age = 99 },
+            new Person { Name = "Bob", Age = 99 },
+        };
+
+        var ex = Assert.Throws<AssertionFailedException>(() => actual.Should().BeEquivalentTo(expected));
+
+        // Both items mismatch on Age (30->99 and 40->99); a full diff should surface both,
+        // not just the first blocking pair found during matching.
+        Assert.Contains("30", ex.Message);
+        Assert.Contains("40", ex.Message);
+    }
 }
 
 public class NewStringAssertionsTests

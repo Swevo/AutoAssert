@@ -146,13 +146,19 @@ internal static class EquivalencyAssertions
         }
 
         var matchedActual = new bool[actualItems.Count];
-        var success = TryMatchCollectionItem(0, matchedActual, visited, out var reportedFailures);
-        if (!success)
+        if (TryMatchCollectionItem(0, matchedActual, visited, out _))
         {
-            failures.AddRange(reportedFailures);
+            return true;
         }
 
-        return success;
+        // No perfect one-to-one matching exists. Rather than reporting only the first blocking
+        // mismatch (as a strict backtracking-failure trace would), greedily pair each expected
+        // item with whichever remaining actual item has the fewest member-level differences, and
+        // report the full diff for every expected item. This isn't guaranteed globally optimal
+        // (unlike the success-path backtracking search), but it surfaces every mismatch instead
+        // of stopping at the first, which matters far more for diagnosing a failing assertion.
+        failures.AddRange(BuildGreedyFullDiff(actualItems, expectedItems, path, visited, options));
+        return false;
 
         bool TryMatchCollectionItem(int expectedIndex, bool[] usedActual, HashSet<ObjectReferencePair> currentVisited, out List<string> resultFailures)
         {
@@ -161,8 +167,6 @@ internal static class EquivalencyAssertions
                 resultFailures = [];
                 return true;
             }
-
-            List<string>? bestAttemptFailures = null;
 
             for (var actualIndex = 0; actualIndex < actualItems.Count; actualIndex++)
             {
@@ -175,7 +179,6 @@ internal static class EquivalencyAssertions
                 var attemptFailures = new List<string>();
                 if (!TryCompare(actualItems[actualIndex], expectedItems[expectedIndex], AppendIndexPath(path, expectedIndex), branchVisited, options, attemptFailures))
                 {
-                    bestAttemptFailures ??= attemptFailures;
                     continue;
                 }
 
@@ -187,12 +190,67 @@ internal static class EquivalencyAssertions
                 }
 
                 usedActual[actualIndex] = false;
-                bestAttemptFailures ??= resultFailures;
             }
 
-            resultFailures = bestAttemptFailures ?? [BuildMissingCollectionItemMessage(path, expectedIndex, expectedItems[expectedIndex])];
+            resultFailures = [];
             return false;
         }
+    }
+
+    /// <summary>
+    /// Greedily pairs each expected item with the remaining actual item that best matches it
+    /// (fewest member-level differences), and returns the full diff for every expected item —
+    /// used only for reporting once we already know no perfect matching exists.
+    /// </summary>
+    private static List<string> BuildGreedyFullDiff(
+        IReadOnlyList<object?> actualItems,
+        IReadOnlyList<object?> expectedItems,
+        string path,
+        HashSet<ObjectReferencePair> visited,
+        EquivalencyOptions options)
+    {
+        var results = new List<string>();
+        var usedActual = new bool[actualItems.Count];
+
+        for (var expectedIndex = 0; expectedIndex < expectedItems.Count; expectedIndex++)
+        {
+            var itemPath = AppendIndexPath(path, expectedIndex);
+            var bestActualIndex = -1;
+            List<string>? bestFailures = null;
+
+            for (var actualIndex = 0; actualIndex < actualItems.Count; actualIndex++)
+            {
+                if (usedActual[actualIndex])
+                {
+                    continue;
+                }
+
+                var attemptFailures = new List<string>();
+                TryCompare(actualItems[actualIndex], expectedItems[expectedIndex], itemPath, new HashSet<ObjectReferencePair>(visited), options, attemptFailures);
+
+                if (bestFailures is null || attemptFailures.Count < bestFailures.Count)
+                {
+                    bestActualIndex = actualIndex;
+                    bestFailures = attemptFailures;
+
+                    if (attemptFailures.Count == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (bestActualIndex < 0)
+            {
+                results.Add(BuildMissingCollectionItemMessage(path, expectedIndex, expectedItems[expectedIndex]));
+                continue;
+            }
+
+            usedActual[bestActualIndex] = true;
+            results.AddRange(bestFailures!);
+        }
+
+        return results;
     }
 
     private static MemberDescriptor[] GetMembers(Type type)

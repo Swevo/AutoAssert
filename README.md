@@ -64,6 +64,16 @@ using (new AssertionScope())
 dotnet add package Swevo.AutoAssert
 ```
 
+Optionally add the companion Roslyn analyzers, which catch common fluent-assertion mistakes at
+compile time (e.g. a bare `subject.Should();` that asserts nothing, or an unawaited
+`ThrowAsync`/`NotThrowAsync`):
+
+```bash
+dotnet add package Swevo.AutoAssert.Analyzers
+```
+
+See [`src/AutoAssert.Analyzers/README.md`](src/AutoAssert.Analyzers/README.md) for the full diagnostic list.
+
 ## Supported assertions
 
 | Type | Examples |
@@ -130,15 +140,18 @@ Current scope:
   member (not only the first) at any depth
 - treats collections as **order-independent** by default; `WithStrictOrdering()` switches to
   positional (order-dependent) comparison
+- for order-independent collections, when no perfect item-to-item matching exists, every expected
+  item's full diff is reported (via a greedy best-fit pairing), not just the first blocking mismatch
 - `Excluding(...)` skips named members or members selected via an expression, at the top level
 - uses value equality for primitives, strings, enums, dates, GUIDs, and other value types
 - ignores extra public members on the actual value when the expected value has fewer members
 - protects against infinite recursion on circular object graphs
 
-Remaining limitation versus FluentAssertions: for order-independent collections, once a valid
-item pairing is found but one pair doesn't match, only that pair's full diff is reported (not
-every possible mismatch across the whole collection). Full-diff for plain object graphs has no
-such limitation.
+Remaining limitation versus FluentAssertions: the greedy best-fit pairing used for reporting
+order-independent collection diffs isn't guaranteed globally optimal (unlike the exhaustive
+backtracking search used to detect whether a perfect match exists at all) — in rare cases with
+many near-duplicate items it may not report the *minimal* possible diff, though it always reports
+a diff for every expected item.
 
 ## Custom assertions
 
