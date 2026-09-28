@@ -84,7 +84,7 @@ See [`src/AutoAssert.Analyzers/README.md`](src/AutoAssert.Analyzers/README.md) f
 | Numerics (int/long/short/byte/uint/ulong/ushort/sbyte/double/float/decimal) | `Be`, `BeGreaterThan`, `BeLessThan`, `BeInRange`, `BeApproximately`, `BePositive`, `BeNegative`, `BeOneOf`, `BeNaN`/`NotBeNaN` (double/float) |
 | Collections | `HaveCount`, `HaveCountGreaterThan`, `HaveCountLessThan`, `Contain`, `Contain(predicate)`, `ContainInOrder`, `BeEquivalentTo`, `Equal`, `ContainSingle`, `OnlyHaveUniqueItems`, `AllSatisfy`, `SatisfyRespectively`, `BeInAscendingOrder`, `BeInDescendingOrder` |
 | Dictionaries | `ContainKey`, `NotContainKey`, `ContainValue`, `NotContainValue`, `ContainKeyAndValue`, `HaveCount`, `BeEmpty`, `NotBeEmpty` |
-| Exceptions | `Throw<T>`, `ThrowAsync<T>`, `NotThrow`, `NotThrow<T>`, `NotThrowAsync`, `WithMessage`, `WithInnerException<T>`, `Where(predicate)`, `WithParameterName` |
+| Exceptions | `Throw<T>`, `ThrowAsync<T>`, `NotThrow`, `NotThrow<T>`, `NotThrowAsync`, `WithMessage`, `WithMessageContaining`, `WithMessageMatching` (wildcards), `WithInnerException<T>`, `Where(predicate)`, `WithParameterName` |
 | Value-returning functions | `Func<T>.Should().Throw<TException>()/.NotThrow()`, `Func<Task<T>>.Should().ThrowAsync<TException>()/.NotThrowAsync()` (both return the resolved value) |
 | Dates/times | `DateTime`/`DateTimeOffset`: `Be`, `NotBe`, `BeBefore`, `BeAfter`, `BeOnOrBefore`, `BeOnOrAfter`, `BeCloseTo`, `BeSameDateAs`. `TimeSpan`: `Be`, `BeGreaterThan`, `BeLessThan`, `BeCloseTo` |
 | Guid | `Be`, `NotBe`, `BeEmpty`, `NotBeEmpty` |
@@ -175,6 +175,35 @@ restores the out-of-the-box (no exclusions, order-independent) behavior.
 > `AssertionOptions` has — avoid relying on it in test suites that run test classes in parallel
 > with per-class differing configuration, since configuration set by one test can affect another
 > running concurrently.
+
+## Colorized diff output
+
+Enable ANSI color highlighting of expected/actual values in failure messages — expected values are
+rendered green, actual values red — for the most commonly hit assertions (`BeEquivalentTo` member
+mismatches, `Object.Should().Be`, `String.Should().Be`):
+
+```csharp
+AssertionConfig.UseColorizedOutput = true;
+```
+
+- Off by default, since many test runners (e.g. the Visual Studio Test Explorer output pane) render
+  raw ANSI escape codes as garbage rather than interpreting them. It's most useful for CI logs and
+  terminal-based test runners (`dotnet test` in a real console) that do interpret ANSI codes.
+- Like `ConfigureEquivalency`, this is process-wide mutable state — avoid toggling it from tests
+  that run in parallel with others that assert on exact failure-message text.
+
+## Wildcard exception message matching
+
+`WithMessageMatching` asserts an exception's message against a wildcard pattern (`*` matches any
+run of characters, `?` matches a single character) — handy when a message contains a generated ID
+or other value you don't want to hardcode:
+
+```csharp
+Action act = () => throw new InvalidOperationException("Order 12345 was not found");
+
+act.Should().Throw<InvalidOperationException>()
+    .WithMessageMatching("Order * was not found");
+```
 
 ## Snapshot testing
 

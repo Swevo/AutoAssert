@@ -26,6 +26,14 @@ public static class AssertionConfig
     /// <summary>Restores the global equivalency defaults to their out-of-the-box (empty) state.</summary>
     public static void ResetEquivalencyDefaults() => _equivalencyDefaults = new EquivalencyOptions();
 
+    /// <summary>
+    /// When <c>true</c>, failure messages colorize "expected" values green and "actual"/found
+    /// values red using ANSI escape codes — rendered by most modern terminals (including GitHub
+    /// Actions logs and most local shells), but not by plain-text sinks like the Visual Studio
+    /// Test Explorer output pane. Off by default; opt in only if your test runner/CI renders ANSI.
+    /// </summary>
+    public static bool UseColorizedOutput { get; set; }
+
     /// <summary>Returns a fresh, independent copy of the current global equivalency defaults.</summary>
     internal static EquivalencyOptions CreateDefaultEquivalencyOptions() => _equivalencyDefaults.Clone();
 }

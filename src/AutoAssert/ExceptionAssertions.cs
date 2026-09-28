@@ -250,6 +250,24 @@ public readonly struct ExceptionAssertions<TException> where TException : Except
         return this;
     }
 
+    /// <summary>
+    /// Asserts the exception message matches a wildcard pattern (<c>*</c> matches any run of
+    /// characters, <c>?</c> matches any single character) — mirrors FluentAssertions'
+    /// <c>WithMessage</c> wildcard behavior for message assertions that shouldn't require an
+    /// exact string (e.g. matching a message containing a dynamic id).
+    /// </summary>
+    public ExceptionAssertions<TException> WithMessageMatching(string wildcardPattern, string because = "", params object[] becauseArgs)
+    {
+        if (!WildcardMatcher.IsMatch(Exception.Message, wildcardPattern))
+        {
+            AssertionHelpers.Fail(
+                $"Expected exception message to match wildcard pattern \"{wildcardPattern}\", but found \"{Exception.Message}\".",
+                because, becauseArgs);
+        }
+
+        return this;
+    }
+
     public ExceptionAssertions<TException> WithInnerException<TInner>(string because = "", params object[] becauseArgs)
         where TInner : Exception
     {

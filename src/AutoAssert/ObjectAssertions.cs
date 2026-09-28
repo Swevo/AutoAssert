@@ -18,7 +18,7 @@ public readonly struct ObjectAssertions
         if (!Equals(_subject, expected))
         {
             AssertionHelpers.Fail(
-                $"Expected {AssertionHelpers.Format(expected)}, but found {AssertionHelpers.Format(_subject)}.",
+                $"Expected {AssertionHelpers.FormatExpected(expected)}, but found {AssertionHelpers.FormatActual(_subject)}.",
                 because, becauseArgs);
         }
 
@@ -30,7 +30,7 @@ public readonly struct ObjectAssertions
         if (Equals(_subject, unexpected))
         {
             AssertionHelpers.Fail(
-                $"Expected value not to be {AssertionHelpers.Format(unexpected)}, but it was.",
+                $"Expected value not to be {AssertionHelpers.FormatExpected(unexpected)}, but it was.",
                 because, becauseArgs);
         }
 

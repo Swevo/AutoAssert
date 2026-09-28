@@ -321,8 +321,8 @@ internal static class EquivalencyAssertions
     private static string BuildValueMismatchMessage(string path, object? expected, object? actual)
     {
         return string.IsNullOrEmpty(path)
-            ? $"Expected value to be {AssertionHelpers.Format(expected)}, but found {AssertionHelpers.Format(actual)}."
-            : $"Expected member '{path}' to be {AssertionHelpers.Format(expected)}, but found {AssertionHelpers.Format(actual)}.";
+            ? $"Expected value to be {AssertionHelpers.FormatExpected(expected)}, but found {AssertionHelpers.FormatActual(actual)}."
+            : $"Expected member '{path}' to be {AssertionHelpers.FormatExpected(expected)}, but found {AssertionHelpers.FormatActual(actual)}.";
     }
 
     private static string BuildMissingMemberMessage(string path) =>
@@ -338,7 +338,7 @@ internal static class EquivalencyAssertions
     private static string BuildMissingCollectionItemMessage(string path, int index, object? expectedItem)
     {
         var itemPath = AppendIndexPath(path, index);
-        return $"Expected member '{itemPath}' to match {AssertionHelpers.Format(expectedItem)}, but no equivalent item was found.";
+        return $"Expected member '{itemPath}' to match {AssertionHelpers.FormatExpected(expectedItem)}, but no equivalent item was found.";
     }
 
     private sealed class MemberDescriptor

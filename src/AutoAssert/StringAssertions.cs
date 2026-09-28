@@ -19,7 +19,7 @@ public readonly struct StringAssertions
         if (!string.Equals(_subject, expected, StringComparison.Ordinal))
         {
             AssertionHelpers.Fail(
-                $"Expected string to be {AssertionHelpers.Format(expected)}, but found {AssertionHelpers.Format(_subject)}.",
+                $"Expected string to be {AssertionHelpers.FormatExpected(expected)}, but found {AssertionHelpers.FormatActual(_subject)}.",
                 because, becauseArgs);
         }
 
@@ -30,7 +30,7 @@ public readonly struct StringAssertions
     {
         if (string.Equals(_subject, unexpected, StringComparison.Ordinal))
         {
-            AssertionHelpers.Fail($"Expected string not to be {AssertionHelpers.Format(unexpected)}, but it was.", because, becauseArgs);
+            AssertionHelpers.Fail($"Expected string not to be {AssertionHelpers.FormatExpected(unexpected)}, but it was.", because, becauseArgs);
         }
 
         return new AndConstraint<StringAssertions>(this);
@@ -214,8 +214,7 @@ public readonly struct StringAssertions
     /// <summary>Wildcard match where <c>*</c> matches any run of characters and <c>?</c> matches a single character (e.g. <c>"W*ld"</c>).</summary>
     public AndConstraint<StringAssertions> Match(string wildcardPattern, string because = "", params object[] becauseArgs)
     {
-        var regexPattern = "^" + Regex.Escape(wildcardPattern).Replace("\\*", ".*").Replace("\\?", ".") + "$";
-        if (_subject is null || !Regex.IsMatch(_subject, regexPattern, RegexOptions.Singleline))
+        if (_subject is null || !WildcardMatcher.IsMatch(_subject, wildcardPattern))
         {
             AssertionHelpers.Fail($"Expected string {AssertionHelpers.Format(_subject)} to match wildcard pattern {AssertionHelpers.Format(wildcardPattern)}.", because, becauseArgs);
         }
