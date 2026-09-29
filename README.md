@@ -8,6 +8,12 @@
 
 **Free, MIT-licensed fluent assertions for .NET.** No commercial license required — ever.
 
+## Related Swevo packages
+
+- [`AutoMap.Generator`](https://www.nuget.org/packages/AutoMap.Generator) — compile-time object mapping
+- [`AutoDispatch.Generator`](https://www.nuget.org/packages/AutoDispatch.Generator) — compile-time MediatR-style dispatch
+- [`AutoHttpClient.Generator`](https://www.nuget.org/packages/AutoHttpClient.Generator) — compile-time typed HTTP clients
+
 ## Why AutoAssert?
 
 Starting with v8, **FluentAssertions requires a paid commercial license** for use in commercial
