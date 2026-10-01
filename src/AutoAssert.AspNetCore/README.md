@@ -32,6 +32,8 @@ await response.Should().HaveJsonContentEquivalentTo(new OrderDto { Id = 1, Total
 | `HaveContentAsync(expected)` | Exact body string assertion |
 | `HaveJsonContentEquivalentTo<T>(expected)` | JSON body deserialization + AutoAssert equivalency |
 
+These assertions now participate in ambient `AssertionScope`, so multiple failures can be aggregated with core AutoAssert assertions.
+
 ## License
 
 MIT © Justin Bannister

@@ -13,7 +13,7 @@ public static class JsonAssertionExtensions
     {
         if (!TryParse(assertions.Subject, out _, out var parseError))
         {
-            Fail($"Expected value to be valid JSON, but it was not: {parseError}", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected value to be valid JSON, but it was not: {parseError}", because, becauseArgs);
         }
 
         return new AndConstraint<StringAssertions>(assertions);
@@ -24,7 +24,7 @@ public static class JsonAssertionExtensions
     {
         if (!TryParse(assertions.Subject, out var document, out var parseError))
         {
-            Fail($"Expected value to be valid JSON, but it was not: {parseError}", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected value to be valid JSON, but it was not: {parseError}", because, becauseArgs);
             return new AndConstraint<StringAssertions>(assertions);
         }
 
@@ -32,7 +32,7 @@ public static class JsonAssertionExtensions
         {
             if (!JsonPathNavigator.TryGetValue(document.RootElement, path, out _))
             {
-                Fail($"Expected JSON to have a property at path '{path}', but it did not.", because, becauseArgs);
+                AssertionRuntime.Fail($"Expected JSON to have a property at path '{path}', but it did not.", because, becauseArgs);
             }
         }
 
@@ -44,7 +44,7 @@ public static class JsonAssertionExtensions
     {
         if (!TryParse(assertions.Subject, out var document, out var parseError))
         {
-            Fail($"Expected value to be valid JSON, but it was not: {parseError}", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected value to be valid JSON, but it was not: {parseError}", because, becauseArgs);
             return new AndConstraint<StringAssertions>(assertions);
         }
 
@@ -52,7 +52,7 @@ public static class JsonAssertionExtensions
         {
             if (!JsonPathNavigator.TryGetValue(document.RootElement, path, out var actualValue))
             {
-                Fail($"Expected JSON to have a property at path '{path}', but it did not.", because, becauseArgs);
+                AssertionRuntime.Fail($"Expected JSON to have a property at path '{path}', but it did not.", because, becauseArgs);
                 return new AndConstraint<StringAssertions>(assertions);
             }
 
@@ -60,7 +60,7 @@ public static class JsonAssertionExtensions
             var diff = JsonComparer.Diff(expectedElement, actualValue, path);
             if (diff.Count > 0)
             {
-                Fail($"Expected JSON property at '{path}' to be {JsonSerializer.Serialize(expectedValue)}, but found {actualValue.GetRawText()}.", because, becauseArgs);
+                AssertionRuntime.Fail($"Expected JSON property at '{path}' to be {JsonSerializer.Serialize(expectedValue)}, but found {actualValue.GetRawText()}.", because, becauseArgs);
             }
         }
 
@@ -76,7 +76,7 @@ public static class JsonAssertionExtensions
     {
         if (!TryParse(assertions.Subject, out var actualDocument, out var actualParseError))
         {
-            Fail($"Expected value to be valid JSON, but it was not: {actualParseError}", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected value to be valid JSON, but it was not: {actualParseError}", because, becauseArgs);
             return new AndConstraint<StringAssertions>(assertions);
         }
 
@@ -84,7 +84,7 @@ public static class JsonAssertionExtensions
         {
             if (!TryParse(expectedJson, out var expectedDocument, out var expectedParseError))
             {
-                Fail($"Expected JSON was not valid JSON: {expectedParseError}", because, becauseArgs);
+                AssertionRuntime.Fail($"Expected JSON was not valid JSON: {expectedParseError}", because, becauseArgs);
                 return new AndConstraint<StringAssertions>(assertions);
             }
 
@@ -93,7 +93,7 @@ public static class JsonAssertionExtensions
                 var diff = JsonComparer.Diff(expectedDocument.RootElement, actualDocument.RootElement);
                 if (diff.Count > 0)
                 {
-                    Fail(
+                    AssertionRuntime.Fail(
                         $"Expected JSON to be equivalent to the given value, but found {diff.Count} difference(s):{Environment.NewLine}" +
                         string.Join(Environment.NewLine, diff.Select(d => "- " + d)),
                         because, becauseArgs);
@@ -120,25 +120,4 @@ public static class JsonAssertionExtensions
         }
     }
 
-    private static void Fail(string message, string because, object[] becauseArgs)
-    {
-        var reason = BuildReason(because, becauseArgs);
-        throw new AssertionFailedException(message + reason);
-    }
-
-    private static string BuildReason(string because, object[] becauseArgs)
-    {
-        if (string.IsNullOrWhiteSpace(because))
-        {
-            return string.Empty;
-        }
-
-        var reason = becauseArgs is { Length: > 0 } ? string.Format(because, becauseArgs) : because;
-        if (!reason.StartsWith("because", StringComparison.OrdinalIgnoreCase))
-        {
-            reason = "because " + reason;
-        }
-
-        return " " + reason;
-    }
 }

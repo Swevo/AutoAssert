@@ -26,6 +26,8 @@ json.Should().BeEquivalentToJson("""{ "a": 1, "b": 2 }""");
 | `HaveJsonPropertyEqualTo(path, value)` | Path value assertion |
 | `BeEquivalentToJson(expectedJson)` | Structural JSON comparison with clear mismatches |
 
+All failures flow through AutoAssert's core failure pipeline, so these assertions participate in `AssertionScope`.
+
 ## License
 
 MIT © Justin Bannister

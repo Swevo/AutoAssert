@@ -9,11 +9,6 @@ namespace AutoAssert;
 /// and string/JSON body. Designed for ASP.NET Core <c>WebApplicationFactory</c>/<c>TestServer</c>
 /// integration tests and general <see cref="HttpClient"/>-based API tests.
 /// </summary>
-/// <remarks>
-/// Failures always throw immediately as an <see cref="AssertionFailedException"/>; unlike the
-/// core AutoAssert assertion types, these do not currently participate in an ambient
-/// <see cref="AssertionScope"/> (that integration point is internal to the core package).
-/// </remarks>
 public readonly struct HttpResponseMessageAssertions
 {
     private readonly HttpResponseMessage? _subject;
@@ -29,7 +24,7 @@ public readonly struct HttpResponseMessageAssertions
 
         if (_subject!.StatusCode != expected)
         {
-            Fail($"Expected response to have status code {(int)expected} ({expected}), but found {(int)_subject.StatusCode} ({_subject.StatusCode}).", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response to have status code {(int)expected} ({expected}), but found {(int)_subject.StatusCode} ({_subject.StatusCode}).", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -41,7 +36,7 @@ public readonly struct HttpResponseMessageAssertions
 
         if (!_subject!.IsSuccessStatusCode)
         {
-            Fail($"Expected response to have a successful (2xx) status code, but found {(int)_subject.StatusCode} ({_subject.StatusCode}).", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response to have a successful (2xx) status code, but found {(int)_subject.StatusCode} ({_subject.StatusCode}).", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -54,7 +49,7 @@ public readonly struct HttpResponseMessageAssertions
         var code = (int)_subject!.StatusCode;
         if (code is < 400 or >= 500)
         {
-            Fail($"Expected response to have a client error (4xx) status code, but found {code} ({_subject.StatusCode}).", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response to have a client error (4xx) status code, but found {code} ({_subject.StatusCode}).", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -67,7 +62,7 @@ public readonly struct HttpResponseMessageAssertions
         var code = (int)_subject!.StatusCode;
         if (code < 500)
         {
-            Fail($"Expected response to have a server error (5xx) status code, but found {code} ({_subject.StatusCode}).", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response to have a server error (5xx) status code, but found {code} ({_subject.StatusCode}).", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -82,13 +77,13 @@ public readonly struct HttpResponseMessageAssertions
 
         if (!hasHeader)
         {
-            Fail($"Expected response to have header '{name}', but it was not present.", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response to have header '{name}', but it was not present.", because, becauseArgs);
             return new AndConstraint<HttpResponseMessageAssertions>(this);
         }
 
         if (expectedValue is not null && !values!.Contains(expectedValue))
         {
-            Fail($"Expected header '{name}' to have value \"{expectedValue}\", but found \"{string.Join(", ", values!)}\".", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected header '{name}' to have value \"{expectedValue}\", but found \"{string.Join(", ", values!)}\".", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -101,7 +96,7 @@ public readonly struct HttpResponseMessageAssertions
         var actualMediaType = _subject!.Content.Headers.ContentType?.MediaType;
         if (!string.Equals(actualMediaType, expectedMediaType, StringComparison.OrdinalIgnoreCase))
         {
-            Fail($"Expected response content type to be \"{expectedMediaType}\", but found \"{actualMediaType ?? "<none>"}\".", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response content type to be \"{expectedMediaType}\", but found \"{actualMediaType ?? "<none>"}\".", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -114,7 +109,7 @@ public readonly struct HttpResponseMessageAssertions
         var actual = await _subject!.Content.ReadAsStringAsync();
         if (actual != expected)
         {
-            Fail($"Expected response content to be \"{expected}\", but found \"{actual}\".", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response content to be \"{expected}\", but found \"{actual}\".", because, becauseArgs);
         }
 
         return new AndConstraint<HttpResponseMessageAssertions>(this);
@@ -136,7 +131,7 @@ public readonly struct HttpResponseMessageAssertions
         }
         catch (JsonException ex)
         {
-            Fail($"Expected response content to deserialize as {typeof(T).Name}, but it did not: {ex.Message}", because, becauseArgs);
+            AssertionRuntime.Fail($"Expected response content to deserialize as {typeof(T).Name}, but it did not: {ex.Message}", because, becauseArgs);
             return new AndConstraint<HttpResponseMessageAssertions>(this);
         }
 
@@ -148,29 +143,7 @@ public readonly struct HttpResponseMessageAssertions
     {
         if (_subject is null)
         {
-            Fail("Expected an HttpResponseMessage, but found <null>.", string.Empty, []);
+            AssertionRuntime.Fail("Expected an HttpResponseMessage, but found <null>.");
         }
-    }
-
-    private static void Fail(string message, string because, object[] becauseArgs)
-    {
-        var reason = BuildReason(because, becauseArgs);
-        throw new AssertionFailedException(message + reason);
-    }
-
-    private static string BuildReason(string because, object[] becauseArgs)
-    {
-        if (string.IsNullOrWhiteSpace(because))
-        {
-            return string.Empty;
-        }
-
-        var reason = becauseArgs is { Length: > 0 } ? string.Format(because, becauseArgs) : because;
-        if (!reason.StartsWith("because", StringComparison.OrdinalIgnoreCase))
-        {
-            reason = "because " + reason;
-        }
-
-        return " " + reason;
     }
 }

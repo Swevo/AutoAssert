@@ -114,4 +114,20 @@ public class HttpResponseMessageAssertionsTests
         var ex = Assert.Throws<AssertionFailedException>(() => response.Should().HaveStatusCode(HttpStatusCode.OK));
         Assert.Contains("null", ex.Message);
     }
+
+    [Fact]
+    public void Http_response_assertions_participate_in_AssertionScope()
+    {
+        using var response = CreateResponse(HttpStatusCode.BadRequest, "{}", "text/plain");
+
+        var ex = Assert.Throws<AssertionFailedException>(() =>
+        {
+            using var _ = new AssertionScope();
+            response.Should().HaveStatusCode(HttpStatusCode.OK);
+            response.Should().HaveContentType("application/json");
+        });
+
+        Assert.Contains("status code 200", ex.Message);
+        Assert.Contains("application/json", ex.Message);
+    }
 }

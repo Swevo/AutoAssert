@@ -85,4 +85,18 @@ public class JsonAssertionExtensionsTests
         Assert.Contains("missing", ex.Message);
         Assert.Contains("extra", ex.Message);
     }
+
+    [Fact]
+    public void Json_assertions_participate_in_AssertionScope()
+    {
+        var ex = Assert.Throws<AssertionFailedException>(() =>
+        {
+            using var _ = new AssertionScope();
+            "not json".Should().BeValidJson();
+            """{"customer":{"name":"Ada"}}""".Should().HaveJsonProperty("customer.address");
+        });
+
+        Assert.Contains("valid JSON", ex.Message);
+        Assert.Contains("customer.address", ex.Message);
+    }
 }
