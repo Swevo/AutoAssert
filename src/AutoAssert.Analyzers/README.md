@@ -18,6 +18,8 @@ This package is development-only and does not ship with application output.
 | `AUTOA002` | Unawaited async assertion (`ThrowAsync`, `NotThrowAsync`, `CompleteWithinAsync`). |
 | `AUTOA003` | Weak exception assertions that use `Throw<Exception>()` or `ThrowAsync<Exception>()` instead of a specific exception type. |
 
+`AUTOA001` includes quick fixes to chain a real assertion (`.NotBeNull()`, `.NotBeNullOrEmpty()` for strings, or `.Be(expected)` scaffold).
+
 ## Example
 
 ```csharp

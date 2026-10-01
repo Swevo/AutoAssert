@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 1.0.3 (Swevo.AutoAssert.Analyzers)
+
+- Added `AUTOA001` code fixes for bare `Should()` calls:
+  - chain `.NotBeNull()`
+  - chain `.NotBeNullOrEmpty()` for string subjects
+  - chain `.Be(expected)` scaffold
+- Analyzer package now ships analyzer + code-fix support together.
+
 ## 1.0.2 (Swevo.AutoAssert.Analyzers)
 
 - Added analyzer rule `AUTOA003` to warn on weak exception assertions using `Throw<Exception>()` or `ThrowAsync<Exception>()`.

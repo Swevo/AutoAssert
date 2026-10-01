@@ -7,12 +7,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <NoWarn>$(NoWarn);RS1038</NoWarn>
 
     <PackageId>Swevo.AutoAssert.Analyzers</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>Justin Bannister</Authors>
     <Copyright>Copyright (c) 2026 Justin Bannister</Copyright>
-    <Description>Roslyn analyzers for AutoAssert that catch common assertion mistakes at compile time: bare Should() calls, unawaited async assertions, and weak Throw&lt;Exception&gt;/ThrowAsync&lt;Exception&gt; checks that should use a specific exception type.</Description>
+    <Description>Roslyn analyzers and code fixes for AutoAssert that catch common assertion mistakes at compile time: bare Should() calls, unawaited async assertions, and weak Throw&lt;Exception&gt;/ThrowAsync&lt;Exception&gt; checks that should use a specific exception type.</Description>
     <PackageTags>testing;assertions;roslyn;analyzer;code-quality;unit-testing;xunit;nunit;mstest;fluent-assertions;dotnet;csharp;free;mit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -26,7 +27,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.11.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+    <PackageReference Include="System.Composition.AttributedModel" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
