@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## 1.0.2 (Swevo.AutoAssert.Analyzers)
+
+- Added analyzer rule `AUTOA003` to warn on weak exception assertions using `Throw<Exception>()` or `ThrowAsync<Exception>()`.
+- Updated analyzer package metadata/README to include the new diagnostic.
+
 ## 2.4.1 / 1.0.1 companion packages
 
 - Refreshed NuGet conversion assets: rewritten README quickstart flow, recipes, compatibility matrix, and comparison guide.

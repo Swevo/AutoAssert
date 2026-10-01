@@ -9,10 +9,10 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
     <PackageId>Swevo.AutoAssert.Analyzers</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Justin Bannister</Authors>
     <Copyright>Copyright (c) 2026 Justin Bannister</Copyright>
-    <Description>Roslyn analyzers for AutoAssert that catch common assertion mistakes at compile time: bare Should() calls that assert nothing, and unawaited ThrowAsync/NotThrowAsync/CompleteWithinAsync assertions.</Description>
+    <Description>Roslyn analyzers for AutoAssert that catch common assertion mistakes at compile time: bare Should() calls, unawaited async assertions, and weak Throw&lt;Exception&gt;/ThrowAsync&lt;Exception&gt; checks that should use a specific exception type.</Description>
     <PackageTags>testing;assertions;roslyn;analyzer;code-quality;unit-testing;xunit;nunit;mstest;fluent-assertions;dotnet;csharp;free;mit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
