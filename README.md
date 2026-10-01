@@ -4,65 +4,16 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Swevo.AutoAssert.svg)](https://www.nuget.org/packages/Swevo.AutoAssert/)
 [![CI](https://github.com/Swevo/AutoAssert/actions/workflows/build.yml/badge.svg)](https://github.com/Swevo/AutoAssert/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET 10 Ready](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](#)
+[![.NET](https://img.shields.io/badge/.NET-netstandard2.0%20%7C%20net8.0%20%7C%20net9.0%20%7C%20net10.0-512BD4?logo=dotnet)](docs/COMPATIBILITY.md)
 
-**Free, MIT-licensed fluent assertions for .NET.** No commercial license required — ever.
+**Free, MIT-licensed fluent assertions for .NET** with familiar `Should()` syntax, deep object diffs, snapshot testing, and zero commercial license requirements.
 
-## Related Swevo packages
+## Why AutoAssert instead of FluentAssertions?
 
-- [`AutoMap.Generator`](https://www.nuget.org/packages/AutoMap.Generator) — compile-time object mapping
-- [`AutoDispatch.Generator`](https://www.nuget.org/packages/AutoDispatch.Generator) — compile-time MediatR-style dispatch
-- [`AutoHttpClient.Generator`](https://www.nuget.org/packages/AutoHttpClient.Generator) — compile-time typed HTTP clients
-
-## Why AutoAssert?
-
-Starting with v8, **FluentAssertions requires a paid commercial license** for use in commercial
-projects (via its Xceed partnership). AutoAssert provides the same fluent `Should()` syntax
-you already know, fully free and open source under MIT, for teams who don't want licensing
-fees attached to their test suite.
-
-```csharp
-using AutoAssert;
-
-result.Should().Be(42);
-name.Should().NotBeNullOrEmpty();
-items.Should().HaveCount(3);
-action.Should().Throw<InvalidOperationException>().WithMessage("boom");
-```
-
-## Fluent chaining
-
-Every assertion method returns an `AndConstraint<T>`, so you can chain multiple checks on the
-same subject with `.And`:
-
-```csharp
-"hello world".Should()
-    .NotBeNullOrEmpty()
-    .And.StartWith("hello")
-    .And.EndWith("world")
-    .And.Contain("lo wo");
-
-5.Should().BePositive().And.BeLessThan(10);
-```
-
-> **Breaking change note (v2.0.0):** assertion methods used to return `void`; they now return
-> `AndConstraint<T>`. Existing call sites keep working unchanged (the return value can simply
-> be discarded) — only code that explicitly typed a variable/delegate as `void` around a call
-> would need updating, which is extremely rare for fluent assertion call sites.
-
-## AssertionScope
-
-Wrap multiple assertions in an `AssertionScope` to collect **all** failures and report them
-together in a single exception, instead of stopping at the first one:
-
-```csharp
-using (new AssertionScope())
-{
-    result.Name.Should().Be("Ada");
-    result.Age.Should().Be(30);
-    result.Email.Should().NotBeNullOrEmpty();
-} // throws one AssertionFailedException listing every failure, if any occurred
-```
+- **No commercial license requirement** for commercial use.
+- **Familiar migration path**: fluent `Should()` API for xUnit, NUnit, and MSTest.
+- **Deep diff output** for `BeEquivalentTo` mismatches.
+- **AOT-safe direction** with optional generated reflection-free equivalency comparers.
 
 ## Install
 
@@ -70,46 +21,46 @@ using (new AssertionScope())
 dotnet add package Swevo.AutoAssert
 ```
 
-Optionally add the companion Roslyn analyzers, which catch common fluent-assertion mistakes at
-compile time (e.g. a bare `subject.Should();` that asserts nothing, or an unawaited
-`ThrowAsync`/`NotThrowAsync`):
+Optional companion packages:
 
 ```bash
 dotnet add package Swevo.AutoAssert.Analyzers
+dotnet add package Swevo.AutoAssert.Generator
+dotnet add package Swevo.AutoAssert.AspNetCore
+dotnet add package Swevo.AutoAssert.Json
 ```
 
-See [`src/AutoAssert.Analyzers/README.md`](src/AutoAssert.Analyzers/README.md) for the full diagnostic list.
-
-## Supported assertions
-
-| Type | Examples |
-|---|---|
-| Objects | `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeSameAs`, `BeOfType<T>`, `BeAssignableTo<T>`, `Match`, `BeEquivalentTo` |
-| Strings | `Be`, `Contain`, `StartWith`, `EndWith`, `NotStartWith`, `NotEndWith`, `BeNullOrEmpty`, `HaveLength`, `MatchRegex`, `NotMatchRegex`, `BeEquivalentTo`, `ContainEquivalentOf`, `Match` (wildcards), `BeUpperCased`, `BeLowerCased` |
-| Booleans | `BeTrue`, `BeFalse` |
-| Numerics (int/long/short/byte/uint/ulong/ushort/sbyte/double/float/decimal) | `Be`, `BeGreaterThan`, `BeLessThan`, `BeInRange`, `BeApproximately`, `BePositive`, `BeNegative`, `BeOneOf`, `BeNaN`/`NotBeNaN` (double/float) |
-| Collections | `HaveCount`, `HaveCountGreaterThan`, `HaveCountLessThan`, `Contain`, `Contain(predicate)`, `ContainInOrder`, `BeEquivalentTo`, `Equal`, `ContainSingle`, `OnlyHaveUniqueItems`, `AllSatisfy`, `SatisfyRespectively`, `BeInAscendingOrder`, `BeInDescendingOrder` |
-| Dictionaries | `ContainKey`, `NotContainKey`, `ContainValue`, `NotContainValue`, `ContainKeyAndValue`, `HaveCount`, `BeEmpty`, `NotBeEmpty` |
-| Exceptions | `Throw<T>`, `ThrowAsync<T>`, `NotThrow`, `NotThrow<T>`, `NotThrowAsync`, `WithMessage`, `WithMessageContaining`, `WithMessageMatching` (wildcards), `WithInnerException<T>`, `Where(predicate)`, `WithParameterName` |
-| Value-returning functions | `Func<T>.Should().Throw<TException>()/.NotThrow()`, `Func<Task<T>>.Should().ThrowAsync<TException>()/.NotThrowAsync()` (both return the resolved value) |
-| Dates/times | `DateTime`/`DateTimeOffset`: `Be`, `NotBe`, `BeBefore`, `BeAfter`, `BeOnOrBefore`, `BeOnOrAfter`, `BeCloseTo`, `BeSameDateAs`. `TimeSpan`: `Be`, `BeGreaterThan`, `BeLessThan`, `BeCloseTo` |
-| Guid | `Be`, `NotBe`, `BeEmpty`, `NotBeEmpty` |
-| Nullable&lt;T&gt; | `HaveValue`, `NotHaveValue`, `Be`, `NotBe` |
-| Enums | `Be`, `NotBe`, `HaveFlag`, `NotHaveFlag` |
-| Execution time | `action.ExecutionTime().Should().BeLessThan/BeLessOrEqualTo/BeGreaterThan`, `action.Should().CompleteWithin(TimeSpan)`, `func.Should().CompleteWithinAsync(TimeSpan)` |
-
-Every assertion accepts an optional `because` reasoning clause, matching the syntax you're
-used to:
+## 5-minute quickstart
 
 ```csharp
-result.Should().Be(42, "the answer should always be 42");
+using AutoAssert;
+
+[Fact]
+public void Order_total_is_calculated()
+{
+    var order = new { Subtotal = 100m, Tax = 20m, Total = 120m };
+
+    order.Total.Should().Be(120m);
+    order.Should().BeEquivalentTo(new { Subtotal = 100m, Tax = 20m, Total = 120m });
+}
 ```
 
-## BeEquivalentTo
+## High-value examples
 
-`BeEquivalentTo` performs deep structural comparison of public readable properties and public fields.
-It works for plain objects, nested object graphs, and collections of objects, and reports a
-**full diff** of every mismatched member (not just the first one found).
+### 1) Basic assertions and fluent chaining
+
+```csharp
+using AutoAssert;
+
+"hello world".Should()
+    .NotBeNullOrEmpty()
+    .And.StartWith("hello")
+    .And.EndWith("world");
+
+5.Should().BePositive().And.BeLessThan(10);
+```
+
+### 2) Compare complex object graphs with full diffs
 
 ```csharp
 using AutoAssert;
@@ -128,193 +79,78 @@ var expected = new
     Lines = new[] { new { Sku = "ABC", Quantity = 2 } }
 };
 
-actual.Should().BeEquivalentTo(expected);
+actual.Should().BeEquivalentTo(expected, options => options.WithStrictOrdering());
 ```
 
-Configure the comparison with an options callback:
+### 3) Aggregate failures with `AssertionScope`
 
 ```csharp
-actual.Should().BeEquivalentTo(expected, options => options
-    .Excluding(x => x.Id)
-    .Excluding("SomeFieldName")
-    .WithStrictOrdering()); // require collections to match in the same order
-```
+using AutoAssert;
 
-Current scope:
-
-- compares public readable properties and public fields recursively, reporting every mismatched
-  member (not only the first) at any depth
-- treats collections as **order-independent** by default; `WithStrictOrdering()` switches to
-  positional (order-dependent) comparison
-- for order-independent collections, when no perfect item-to-item matching exists, every expected
-  item's full diff is reported (via a greedy best-fit pairing), not just the first blocking mismatch
-- `Excluding(...)` skips named members or members selected via an expression, at the top level
-- uses value equality for primitives, strings, enums, dates, GUIDs, and other value types
-- ignores extra public members on the actual value when the expected value has fewer members
-- protects against infinite recursion on circular object graphs
-
-Remaining limitation versus FluentAssertions: the greedy best-fit pairing used for reporting
-order-independent collection diffs isn't guaranteed globally optimal (unlike the exhaustive
-backtracking search used to detect whether a perfect match exists at all) — in rare cases with
-many near-duplicate items it may not report the *minimal* possible diff, though it always reports
-a diff for every expected item.
-
-### Global equivalency defaults
-
-Configure `BeEquivalentTo` options once for the whole test suite (e.g. always excluding an
-audit-tracking `Id`/`CreatedAt` member), instead of repeating the same options at every call
-site:
-
-```csharp
-// e.g. in a test assembly module initializer or a shared fixture's constructor
-AssertionConfig.ConfigureEquivalency(options => options
-    .Excluding("Id")
-    .Excluding("CreatedAt"));
-```
-
-Every `BeEquivalentTo(expected)` call that doesn't specify its own options callback picks up
-these defaults automatically. A call that *does* provide `options => ...` still starts from the
-global defaults and layers its own configuration on top. `AssertionConfig.ResetEquivalencyDefaults()`
-restores the out-of-the-box (no exclusions, order-independent) behavior.
-
-> **Note:** this is process-wide mutable state, same trade-off FluentAssertions' own
-> `AssertionOptions` has — avoid relying on it in test suites that run test classes in parallel
-> with per-class differing configuration, since configuration set by one test can affect another
-> running concurrently.
-
-## Colorized diff output
-
-Enable ANSI color highlighting of expected/actual values in failure messages — expected values are
-rendered green, actual values red — for the most commonly hit assertions (`BeEquivalentTo` member
-mismatches, `Object.Should().Be`, `String.Should().Be`):
-
-```csharp
-AssertionConfig.UseColorizedOutput = true;
-```
-
-- Off by default, since many test runners (e.g. the Visual Studio Test Explorer output pane) render
-  raw ANSI escape codes as garbage rather than interpreting them. It's most useful for CI logs and
-  terminal-based test runners (`dotnet test` in a real console) that do interpret ANSI codes.
-- Like `ConfigureEquivalency`, this is process-wide mutable state — avoid toggling it from tests
-  that run in parallel with others that assert on exact failure-message text.
-
-## Wildcard exception message matching
-
-`WithMessageMatching` asserts an exception's message against a wildcard pattern (`*` matches any
-run of characters, `?` matches a single character) — handy when a message contains a generated ID
-or other value you don't want to hardcode:
-
-```csharp
-Action act = () => throw new InvalidOperationException("Order 12345 was not found");
-
-act.Should().Throw<InvalidOperationException>()
-    .WithMessageMatching("Order * was not found");
-```
-
-## Snapshot testing
-
-`MatchSnapshot()` serializes the subject to indented JSON and compares it against a baseline file
-stored in a `__snapshots__` folder next to the calling test file — no separate snapshot library
-needed:
-
-```csharp
-var result = BuildOrderSummary();
-
-result.Should().MatchSnapshot();
-```
-
-- **First run**: no baseline exists yet, so one is written (`__snapshots__/{TestMethodName}.snapshot.json`)
-  and the assertion passes. Commit this file to source control as your golden file.
-- **Subsequent runs**: the current value is compared against the committed baseline; a mismatch
-  throws an `AssertionFailedException` showing both the expected (baseline) and actual JSON.
-- Use `MatchSnapshot("someName")` to take multiple named snapshots within a single test method.
-- If a change is intentional, delete the corresponding `__snapshots__/*.snapshot.json` file and
-  re-run the test to record a new baseline.
-- Pass `scrub:` to normalize non-deterministic values (generated GUIDs, "now"-based timestamps)
-  before comparison, so they don't cause spurious snapshot failures:
-
-```csharp
-result.Should().MatchSnapshot(
-    scrub: SnapshotScrubbers.Combine(SnapshotScrubbers.Guids(), SnapshotScrubbers.IsoTimestamps()));
-```
-
-## Custom assertions
-
-Every assertion type is a public struct, so you can extend AutoAssert with your own domain-specific
-assertions exactly like the built-in `FloatingPointAssertionExtensions` does for `NumericAssertions<T>`:
-
-```csharp
-public static class MyCustomAssertionExtensions
+using (new AssertionScope())
 {
-    public static AndConstraint<StringAssertions> BeAValidSku(this StringAssertions assertions, string because = "", params object[] becauseArgs)
-    {
-        // use AssertionHelpers.Fail(...) to report failures consistently (respects AssertionScope)
-        return new AndConstraint<StringAssertions>(assertions);
-    }
+    result.Name.Should().Be("Ada");
+    result.Age.Should().Be(30);
+    result.Email.Should().NotBeNullOrEmpty();
 }
 ```
 
+### 4) Snapshot tests with scrubbers
+
+```csharp
+using AutoAssert;
+
+result.Should().MatchSnapshot(
+    scrub: SnapshotScrubbers.Combine(
+        SnapshotScrubbers.Guids(),
+        SnapshotScrubbers.IsoTimestamps()));
+```
+
+## Migration comparison
+
+AutoAssert is designed to keep common usage nearly identical:
+
+| Scenario | FluentAssertions style | AutoAssert style |
+|---|---|---|
+| Basic value | `value.Should().Be(42);` | `value.Should().Be(42);` |
+| Null/empty | `name.Should().NotBeNullOrEmpty();` | `name.Should().NotBeNullOrEmpty();` |
+| Exception | `act.Should().Throw<InvalidOperationException>();` | `act.Should().Throw<InvalidOperationException>();` |
+| Equivalency | `actual.Should().BeEquivalentTo(expected);` | `actual.Should().BeEquivalentTo(expected);` |
+
+See deeper comparisons in [`docs/COMPARISON.md`](docs/COMPARISON.md).
+
+## Recipes
+
+Copy/paste recipes for common test scenarios:
+
+- [`docs/RECIPES.md`](docs/RECIPES.md) (collections, API payloads, async exceptions, snapshots)
+- [`src/AutoAssert.AspNetCore/README.md`](src/AutoAssert.AspNetCore/README.md) (HTTP integration tests)
+- [`src/AutoAssert.Json/README.md`](src/AutoAssert.Json/README.md) (raw JSON assertions)
+
 ## Companion packages
 
-| Package | Description |
+| Package | Purpose |
 |---|---|
-| [`Swevo.AutoAssert.Analyzers`](src/AutoAssert.Analyzers) | Dev-only Roslyn analyzers that catch discarded `.Should()` calls and unawaited async assertions at compile time. |
-| [`Swevo.AutoAssert.Generator`](src/AutoAssert.Generator) | Source generator that emits a reflection-free `BeEquivalentTo` comparer for types marked `[GenerateEquivalencyComparer]` — faster and AOT-friendly. |
-| [`Swevo.AutoAssert.AspNetCore`](src/AutoAssert.AspNetCore) | Fluent `HttpResponseMessage` assertions (status code, headers, content type, string/JSON body) for `WebApplicationFactory`/`HttpClient` integration tests. |
-| [`Swevo.AutoAssert.Json`](src/AutoAssert.Json) | Fluent assertions on raw JSON strings (`BeValidJson`, `HaveJsonProperty`, `BeEquivalentToJson`) with full structural diffs. |
+| [`Swevo.AutoAssert.Analyzers`](https://www.nuget.org/packages/Swevo.AutoAssert.Analyzers) | Compile-time diagnostics for assertion footguns. |
+| [`Swevo.AutoAssert.Generator`](https://www.nuget.org/packages/Swevo.AutoAssert.Generator) | Reflection-free generated equivalency comparers. |
+| [`Swevo.AutoAssert.AspNetCore`](https://www.nuget.org/packages/Swevo.AutoAssert.AspNetCore) | Fluent `HttpResponseMessage` assertions for integration tests. |
+| [`Swevo.AutoAssert.Json`](https://www.nuget.org/packages/Swevo.AutoAssert.Json) | Fluent assertions over raw JSON strings. |
 
-## Design goals
+## Compatibility matrix
 
-- **MIT licensed, forever.** No commercial tier, no per-seat fees.
-- **Zero reflection where possible** — most assertions are plain equality/comparison checks; `BeEquivalentTo` uses public-member traversal.
-- **AOT-safe** — works with Native AOT test hosts.
-- **Framework agnostic** — throws a plain `AssertionFailedException`, recognized as a failure
-  by xUnit, NUnit, and MSTest alike.
-- **Familiar syntax** — migrating from FluentAssertions should mostly be a find-and-replace of
-  the `using` statement for the assertion types covered above.
+See [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) for package-by-package target frameworks and test framework support.
 
-## Related Packages
+## Release notes
 
-| Package | Downloads | Description |
-|---|---|---|
-| [Swevo.AutoBus](https://www.nuget.org/packages/Swevo.AutoBus) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoBus.svg)](https://www.nuget.org/packages/Swevo.AutoBus) | Free, MIT-licensed in-process message bus for  |
-| [Swevo.AutoBus.RabbitMQ](https://www.nuget.org/packages/Swevo.AutoBus.RabbitMQ) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoBus.RabbitMQ.svg)](https://www.nuget.org/packages/Swevo.AutoBus.RabbitMQ) | RabbitMQ transport for AutoBus |
-| [Swevo.AutoAuth](https://www.nuget.org/packages/Swevo.AutoAuth) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoAuth.svg)](https://www.nuget.org/packages/Swevo.AutoAuth) | A free, MIT-licensed fluent configuration wrapper around OpenIddict for building OAuth2/OIDC token servers in ASP |
-| [Swevo.AutoAudit](https://www.nuget.org/packages/Swevo.AutoAudit) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoAudit.svg)](https://www.nuget.org/packages/Swevo.AutoAudit) | Compile-time audit field generation for EF Core entities using Roslyn source generators |
-| [Swevo.AutoResult](https://www.nuget.org/packages/Swevo.AutoResult) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoResult.svg)](https://www.nuget.org/packages/Swevo.AutoResult) | Compile-time Result<T> monad for  |
-| [Swevo.AutoGuard](https://www.nuget.org/packages/Swevo.AutoGuard) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoGuard.svg)](https://www.nuget.org/packages/Swevo.AutoGuard) | Compile-time guard clauses for  |
-| [Swevo.AutoImage](https://www.nuget.org/packages/Swevo.AutoImage) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoImage.svg)](https://www.nuget.org/packages/Swevo.AutoImage) | A free, MIT-licensed fluent image processing wrapper around SkiaSharp for  |
-| [Swevo.AutoFeatureFlag](https://www.nuget.org/packages/Swevo.AutoFeatureFlag) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoFeatureFlag.svg)](https://www.nuget.org/packages/Swevo.AutoFeatureFlag) | Compile-time feature flag stubs for  |
-| [Swevo.AutoTestData](https://www.nuget.org/packages/Swevo.AutoTestData) | [![Downloads](https://img.shields.io/nuget/dt/Swevo.AutoTestData.svg)](https://www.nuget.org/packages/Swevo.AutoTestData) | Compile-time test data builders for  |
+See [`CHANGELOG.md`](CHANGELOG.md) for version history and feature changes.
 
----
+## Growth and distribution assets
 
-## 💼 Need .NET consulting?
+The repository now includes reusable go-to-market assets:
 
-I'm the author of AutoAssert and a suite of compile-time source generators
-([AutoWire](https://github.com/Swevo/AutoWire), [AutoMap.Generator](https://github.com/Swevo/AutoMap.Generator))
-and 28+ Polly v8 resilience packages. I'm available for consulting on **Polly v8 resilience**,
-**Azure cloud architecture**, and **clean .NET design**.
-
-**[→ solidqualitysolutions.com](https://www.solidqualitysolutions.com/)** · **[LinkedIn](https://www.linkedin.com/in/justbannister/)**
-
-## Also by the same author
-
-> 🌐 Full suite overview: **[swevo.github.io](https://swevo.github.io/)**
-
-| Package | Description |
-|---|---|
-| [**FluentPdf**](https://github.com/Swevo/FluentPdf) | Free, MIT-licensed fluent PDF generation — alternative to QuestPDF's commercial license. |
-| [**AutoBus**](https://github.com/Swevo/AutoBus) | Free, MIT-licensed message bus — alternative to MassTransit's commercial license. |
-| [**AutoArchitecture**](https://github.com/Swevo/AutoArchitecture) | Free, MIT-licensed compile-time architecture rule enforcement — alternative to NDepend. |
-| [**EFCore.BulkOperations**](https://github.com/Swevo/EFCore.BulkOperations) | Free, MIT-licensed bulk insert/update/delete for EF Core. |
-| [**AutoWire**](https://github.com/Swevo/AutoWire) | Compile-time DI auto-registration — `[Scoped]`/`[Singleton]`/`[Transient]` generates `IServiceCollection` registration code. |
-| [**AutoMap.Generator**](https://github.com/Swevo/AutoMap.Generator) | Compile-time object mapping — `[Map(typeof(Dto))]` generates `ToDto()` extension methods. |
-| [**AutoValidate.Generator**](https://github.com/Swevo/AutoValidate.Generator) | Compile-time FluentValidation wiring. |
-| [**AutoResult.Generator**](https://github.com/Swevo/AutoResult.Generator) | Compile-time `Result<T>` monad. |
-| [**AutoDispatch.Generator**](https://github.com/Swevo/AutoDispatch.Generator) | Compile-time CQRS dispatcher — free alternative to MediatR's commercial license. |
-| [**PollyAnalyzers**](https://github.com/Swevo/PollyAnalyzers) | Free Roslyn analyzers for async/resilience anti-patterns — blocking calls, async void, fire-and-forget tasks, swallowed exceptions. |
-| [**PollyAction**](https://github.com/Swevo/PollyAction) | Free retry/backoff GitHub Action — wrap any CI step with exponential-backoff retries. |
+- [`docs/NUGET-LISTING.md`](docs/NUGET-LISTING.md) for listing copy and metadata guidance.
+- [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for release promotion checklist.
+- [`docs/METRICS.md`](docs/METRICS.md) for a simple download and retention measurement model.
 
 ## License
 

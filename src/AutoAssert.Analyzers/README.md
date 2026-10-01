@@ -1,14 +1,6 @@
-# AutoAssert.Analyzers
+# Swevo.AutoAssert.Analyzers
 
-Roslyn analyzers for [AutoAssert](https://www.nuget.org/packages/Swevo.AutoAssert/) that catch
-common fluent-assertion footguns at compile time.
-
-## Diagnostics
-
-| ID | Description |
-|---|---|
-| `AUTOA001` | `subject.Should();` used as a bare statement — asserts nothing since no assertion method follows `Should()`. |
-| `AUTOA002` | An AutoAssert async assertion (`ThrowAsync`, `NotThrowAsync`, `CompleteWithinAsync`) is called without `await`, so the assertion may not run before the test completes. |
+Compile-time diagnostics for [Swevo.AutoAssert](https://www.nuget.org/packages/Swevo.AutoAssert/) that prevent common fluent assertion mistakes.
 
 ## Install
 
@@ -16,8 +8,24 @@ common fluent-assertion footguns at compile time.
 dotnet add package Swevo.AutoAssert.Analyzers
 ```
 
-This is a development-only dependency (`PrivateAssets="all"` in the generated reference) — it
-never ships in your build output.
+This package is development-only and does not ship with application output.
+
+## Diagnostics
+
+| ID | What it catches |
+|---|---|
+| `AUTOA001` | Bare `subject.Should();` statement that performs no assertion. |
+| `AUTOA002` | Unawaited async assertion (`ThrowAsync`, `NotThrowAsync`, `CompleteWithinAsync`). |
+
+## Example
+
+```csharp
+// AUTOA001
+value.Should();
+
+// AUTOA002
+action.Should().ThrowAsync<InvalidOperationException>();
+```
 
 ## License
 

@@ -10,10 +10,11 @@
     <Version>1.0.0</Version>
     <Authors>Justin Bannister</Authors>
     <Copyright>Copyright (c) 2026 Justin Bannister</Copyright>
-    <Description>JSON assertions for AutoAssert: BeValidJson, HaveJsonProperty, and BeEquivalentToJson for asserting on raw JSON strings with full structural diffs (property-order-insensitive for objects).</Description>
-    <PackageTags>testing;assertions;json;fluent-assertions;dotnet;csharp;free;mit</PackageTags>
+    <Description>Fluent assertions for raw JSON strings: validate JSON, assert dotted/indexed properties, and compare full JSON structures with clear diffs (object-key-order-insensitive).</Description>
+    <PackageTags>testing;assertions;json;api-testing;integration-testing;snapshot-testing;fluent-assertions;dotnet;csharp;free;mit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Swevo/AutoAssert</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Swevo/AutoAssert</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>

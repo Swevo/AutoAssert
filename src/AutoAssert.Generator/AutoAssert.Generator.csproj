@@ -12,10 +12,11 @@
     <Version>1.0.0</Version>
     <Authors>Justin Bannister</Authors>
     <Copyright>Copyright (c) 2026 Justin Bannister</Copyright>
-    <Description>Compile-time BeEquivalentTo comparer generator for AutoAssert. Mark a type with [GenerateEquivalencyComparer] to get a reflection-free equivalency comparer generated and auto-registered at compile time, for AOT-friendly, faster structural equality checks.</Description>
-    <PackageTags>testing;assertions;source-generator;roslyn;fluent-assertions;dotnet;csharp;aot-safe;free;mit</PackageTags>
+    <Description>Compile-time BeEquivalentTo comparer generation for AutoAssert. Add [GenerateEquivalencyComparer] to emit reflection-free structural comparers for faster, AOT-friendly equivalency assertions.</Description>
+    <PackageTags>testing;assertions;source-generator;roslyn;code-generation;aot;beequivalentto;unit-testing;fluent-assertions;dotnet;csharp;free;mit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Swevo/AutoAssert</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Swevo/AutoAssert</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\icon.png" Pack="true" PackagePath="" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
