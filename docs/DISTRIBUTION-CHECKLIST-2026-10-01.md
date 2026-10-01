@@ -38,4 +38,5 @@ Based on `docs/DISTRIBUTION.md`.
 ## 5) Follow-up loop
 
 - [x] Tag pushed: `v2.4.1`.
-- [ ] Record day-1/day-7/day-30 download deltas in `docs/METRICS.md` scorecard.
+- [x] Record day-1 baseline download metrics in `docs/METRICS.md`.
+- [ ] Record day-7/day-30 download deltas in `docs/METRICS.md` scorecard.

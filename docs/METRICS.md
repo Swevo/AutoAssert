@@ -19,13 +19,27 @@
 
 ## Simple release scorecard
 
-Capture this per release:
+### 2026-10-01 baseline (release: `v2.4.1`)
 
-- Version
-- Publish date
-- Downloads at day 1 / day 7 / day 30
-- Channels used (Reddit, Discord, dev.to, LinkedIn, X)
-- Best-performing message angle (license, migration ease, feature)
+| Package | Released version | Baseline capture date | Total downloads (all versions) | Version downloads | Day 7 target date | Day 30 target date |
+|---|---:|---|---:|---:|---|---|
+| Swevo.AutoAssert | 2.4.1 | 2026-10-01 | 508 | 0 | 2026-10-08 | 2026-10-31 |
+| Swevo.AutoAssert.Analyzers | 1.0.1 | 2026-10-01 | 0 | 0 | 2026-10-08 | 2026-10-31 |
+| Swevo.AutoAssert.Generator | 1.0.1 | 2026-10-01 | 0 | 0 | 2026-10-08 | 2026-10-31 |
+| Swevo.AutoAssert.AspNetCore | 1.0.1 | 2026-10-01 | 0 | 0 | 2026-10-08 | 2026-10-31 |
+| Swevo.AutoAssert.Json | 1.0.1 | 2026-10-01 | 0 | 0 | 2026-10-08 | 2026-10-31 |
+
+### Day 7 / Day 30 update template
+
+| Package | Day 7 total | Day 7 version | Day 30 total | Day 30 version | Best channel | Message angle |
+|---|---:|---:|---:|---:|---|---|
+| Swevo.AutoAssert |  |  |  |  |  |  |
+| Swevo.AutoAssert.Analyzers |  |  |  |  |  |  |
+| Swevo.AutoAssert.Generator |  |  |  |  |  |  |
+| Swevo.AutoAssert.AspNetCore |  |  |  |  |  |  |
+| Swevo.AutoAssert.Json |  |  |  |  |  |  |
+
+Data source used for baseline: NuGet Search API (`https://azuresearch-usnc.nuget.org/query`).
 
 ## Target-setting example
 
