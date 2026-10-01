@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
 
     <PackageId>Swevo.AutoAssert.Json</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Justin Bannister</Authors>
     <Copyright>Copyright (c) 2026 Justin Bannister</Copyright>
     <Description>Fluent assertions for raw JSON strings: validate JSON, assert dotted/indexed properties, and compare full JSON structures with clear diffs (object-key-order-insensitive).</Description>

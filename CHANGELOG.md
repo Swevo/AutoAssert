@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## 2.4.1 / 1.0.1 companion packages
+
+- Refreshed NuGet conversion assets: rewritten README quickstart flow, recipes, compatibility matrix, and comparison guide.
+- Added release/distribution/metrics documentation to support ongoing download growth.
+- Improved package discovery metadata (descriptions/tags/icons) across all AutoAssert packages.
+- Updated `Microsoft.SourceLink.GitHub` to `10.0.401` to remove `NU1902` vulnerability warning from builds.
+
 ## 2.4.0
 
 - Added `ExceptionAssertions.WithMessageMatching` for wildcard exception message assertions.
