@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## 1.0.4 (Swevo.AutoAssert.Analyzers)
+
+- Added `AUTOA002` code fix to insert `await` for unawaited async assertions.
+- Code fix upgrades containing method/local function/lambda to async where required.
+
 ## 1.0.3 (Swevo.AutoAssert.Analyzers)
 
 - Added `AUTOA001` code fixes for bare `Should()` calls:

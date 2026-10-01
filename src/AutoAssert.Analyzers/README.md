@@ -19,6 +19,7 @@ This package is development-only and does not ship with application output.
 | `AUTOA003` | Weak exception assertions that use `Throw<Exception>()` or `ThrowAsync<Exception>()` instead of a specific exception type. |
 
 `AUTOA001` includes quick fixes to chain a real assertion (`.NotBeNull()`, `.NotBeNullOrEmpty()` for strings, or `.Be(expected)` scaffold).
+`AUTOA002` includes a quick fix that inserts `await` and upgrades the containing method/local-function/lambda to async when needed.
 
 ## Example
 
