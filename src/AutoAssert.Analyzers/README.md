@@ -20,6 +20,7 @@ This package is development-only and does not ship with application output.
 
 `AUTOA001` includes quick fixes to chain a real assertion (`.NotBeNull()`, `.NotBeNullOrEmpty()` for strings, or `.Be(expected)` scaffold).
 `AUTOA002` includes a quick fix that inserts `await` and upgrades the containing method/local-function/lambda to async when needed.
+`AUTOA003` includes quick fixes to replace `Exception` with a more specific exception type scaffold.
 
 ## Example
 

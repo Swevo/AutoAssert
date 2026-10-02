@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## 1.0.5 (Swevo.AutoAssert.Analyzers)
+
+- Added `AUTOA003` code fixes for weak exception assertions:
+  - replace with `InvalidOperationException`
+  - replace with `ArgumentException`
+
 ## 1.0.4 (Swevo.AutoAssert.Analyzers)
 
 - Added `AUTOA002` code fix to insert `await` for unawaited async assertions.
