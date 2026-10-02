@@ -17,10 +17,12 @@ This package is development-only and does not ship with application output.
 | `AUTOA001` | Bare `subject.Should();` statement that performs no assertion. |
 | `AUTOA002` | Unawaited async assertion (`ThrowAsync`, `NotThrowAsync`, `CompleteWithinAsync`). |
 | `AUTOA003` | Weak exception assertions that use `Throw<Exception>()` or `ThrowAsync<Exception>()` instead of a specific exception type. |
+| `AUTOA004` | Repeated `actual.Prop.Should().Be(expected.Prop)` patterns that can be consolidated with `BeEquivalentTo`. |
 
 `AUTOA001` includes quick fixes to chain a real assertion (`.NotBeNull()`, `.NotBeNullOrEmpty()` for strings, or `.Be(expected)` scaffold).
 `AUTOA002` includes a quick fix that inserts `await` and upgrades the containing method/local-function/lambda to async when needed.
 `AUTOA003` includes quick fixes to replace `Exception` with a more specific exception type scaffold.
+`AUTOA004` includes a safe, non-destructive scaffold fix that adds `actual.Should().BeEquivalentTo(new { ... })` and keeps existing assertions.
 
 ## Example
 

@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## 1.0.6 (Swevo.AutoAssert.Analyzers)
+
+- Added analyzer rule `AUTOA004` to suggest `BeEquivalentTo` when 3+ matching `actual.Prop.Should().Be(expected.Prop)` assertions appear in the same scope.
+- Added non-destructive code fix that appends `actual.Should().BeEquivalentTo(new { ... })` scaffold while keeping existing assertions.
+
 ## 1.0.5 (Swevo.AutoAssert.Analyzers)
 
 - Added `AUTOA003` code fixes for weak exception assertions:
